@@ -1,6 +1,9 @@
 import type { Node, Edge } from "@xyflow/react";
 
 const PRIMARY_COLOR = "#2E6BFF";
+const HEALTHY_COLOR = "#689F38";
+const ERROR_COLOR = "#EF5350";
+const UNKNOWN_COLOR = "#F57F17";
 
 export const initialNodes: Node[] = [
   {
@@ -33,56 +36,62 @@ export const initialNodes: Node[] = [
     data: { label: "server pool 004", status: "unknown", count: 37 },
     position: { x: 750, y: 200 },
   },
-  // Level 3 - Server pool 001 children (1 child)
+  // Level 3 - Server pool 001 children (1 child) - healthy only
   {
     id: "5",
     type: "server",
-    data: { label: "Server 1-1" },
+    data: { label: "Server 1-1", status: "healthy" },
     position: { x: 0, y: 350 },
   },
-  // Level 3 - Server pool 002 children (2 children)
+  // Level 3 - Server pool 002 children (3 children) - all 3 types
   {
     id: "6",
     type: "server",
-    data: { label: "Server 2-1" },
+    data: { label: "Server 2-1", status: "healthy" },
     position: { x: 175, y: 350 },
   },
   {
     id: "7",
     type: "server",
-    data: { label: "Server 2-2" },
+    data: { label: "Server 2-2", status: "error" },
+    position: { x: 250, y: 350 },
+  },
+  {
+    id: "13",
+    type: "server",
+    data: { label: "Server 2-3", status: "unknown" },
     position: { x: 325, y: 350 },
   },
-  // Level 3 - Server pool 003 children (3 children)
+  // Level 3 - Server pool 003 children (3 children) - healthy and error
   {
     id: "8",
     type: "server",
-    data: { label: "Server 3-1" },
+    data: { label: "Server 3-1", status: "healthy" },
     position: { x: 425, y: 350 },
   },
   {
     id: "9",
     type: "server",
-    data: { label: "Server 3-2" },
+    data: { label: "Server 3-2", status: "error" },
     position: { x: 500, y: 350 },
   },
   {
     id: "10",
     type: "server",
-    data: { label: "Server 3-3" },
+    data: { label: "Server 3-3", status: "healthy" },
     position: { x: 575, y: 350 },
   },
-  // Level 3 - Server pool 004 children (2 children)
+  // Level 3 - Server pool 004 children (2 children) - error only
   {
     id: "11",
     type: "server",
-    data: { label: "Server 4-1" },
+    data: { label: "Server 4-1", status: "error" },
     position: { x: 675, y: 350 },
   },
   {
     id: "12",
     type: "server",
-    data: { label: "Server 4-2" },
+    data: { label: "Server 4-2", status: "error" },
     position: { x: 825, y: 350 },
   },
 ];
@@ -116,64 +125,80 @@ export const initialEdges: Edge[] = [
     type: "smoothstep",
     style: { stroke: PRIMARY_COLOR },
   },
-  // Edges from server pool 001 to its children
+  // Edges from server pool 001 to its children (healthy only)
   {
     id: "e1-5",
     source: "1",
     target: "5",
     type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
+    style: { stroke: HEALTHY_COLOR },
+    data: { status: "healthy" },
   },
-  // Edges from server pool 002 to its children
+  // Edges from server pool 002 to its children (all 3 types)
   {
     id: "e2-6",
     source: "2",
     target: "6",
     type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
+    style: { stroke: HEALTHY_COLOR },
+    data: { status: "healthy" },
   },
   {
     id: "e2-7",
     source: "2",
     target: "7",
     type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
+    style: { stroke: ERROR_COLOR },
+    data: { status: "error" },
   },
-  // Edges from server pool 003 to its children
+  {
+    id: "e2-13",
+    source: "2",
+    target: "13",
+    type: "smoothstep",
+    style: { stroke: UNKNOWN_COLOR },
+    data: { status: "unknown" },
+  },
+  // Edges from server pool 003 to its children (healthy and error)
   {
     id: "e3-8",
     source: "3",
     target: "8",
     type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
+    style: { stroke: HEALTHY_COLOR },
+    data: { status: "healthy" },
   },
   {
     id: "e3-9",
     source: "3",
     target: "9",
     type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
+    style: { stroke: ERROR_COLOR },
+    data: { status: "error" },
   },
   {
     id: "e3-10",
     source: "3",
     target: "10",
     type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
+    style: { stroke: HEALTHY_COLOR },
+    data: { status: "healthy" },
   },
-  // Edges from server pool 004 to its children
+  // Edges from server pool 004 to its children (error only)
   {
     id: "e4-11",
     source: "4",
     target: "11",
     type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
+    style: { stroke: ERROR_COLOR },
+    data: { status: "error" },
   },
   {
     id: "e4-12",
     source: "4",
     target: "12",
     type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
+    style: { stroke: ERROR_COLOR },
+    data: { status: "error" },
   },
 ];
