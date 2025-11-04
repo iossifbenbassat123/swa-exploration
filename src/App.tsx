@@ -1,44 +1,36 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
-import Iossif from "./Iossif";
-import Kriil from "./Kriil";
+import AddNodeOnEdgeDrop from "./Iossif";
 
 function App() {
   return (
     <Router>
-      <nav
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          zIndex: 1000,
-          padding: "1rem",
-          background: "#222",
-          color: "#fff",
-          display: "flex",
-          gap: "1rem",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-        }}
-      >
-        <Link
-          to="/iossif"
-          style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
+      <div style={{ display: "flex", height: "100vh", margin: 0, padding: 0 }}>
+        <nav
+          style={{
+            width: "200px",
+            background: "#222",
+            color: "#fff",
+            padding: "1rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+            boxShadow: "2px 0 8px rgba(0,0,0,0.2)",
+            margin: 0,
+          }}
         >
-          Iossif
-        </Link>
-        <Link
-          to="/kriil"
-          style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
-        >
-          Kriil
-        </Link>
-      </nav>
-      <div style={{ paddingTop: "4.5rem" }}>
-        <Routes>
-          <Route path="/iossif" element={<Iossif />} />
-          <Route path="/kriil" element={<Kriil />} />
-        </Routes>
+          <Link
+            to="/AddNodeOnEdgeDrop"
+            style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
+          >
+            AddNodeOnEdgeDrop
+          </Link>
+        </nav>
+        <div style={{ flex: 1, overflow: "auto" }}>
+          <Routes>
+            <Route path="/AddNodeOnEdgeDrop" element={<AddNodeOnEdgeDrop />} />
+          </Routes>
+        </div>
       </div>
     </Router>
   );
