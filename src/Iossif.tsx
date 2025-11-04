@@ -30,7 +30,7 @@ let id = 13;
 const getId = () => `${id++}`;
 const nodeOrigin: [number, number] = [0.5, 0];
 
-const AddNodeOnEdgeDrop = () => {
+const Topology1 = () => {
   const reactFlowWrapper = useRef(null);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
@@ -96,10 +96,10 @@ const AddNodeOnEdgeDrop = () => {
   );
 };
 
-const AddNodeOnEdgeDropWithProvider = () => (
+const Topology1WithProvider = () => (
   <ReactFlowProvider>
-    <AddNodeOnEdgeDrop />
+    <Topology1 />
   </ReactFlowProvider>
 );
 
-export default AddNodeOnEdgeDropWithProvider;
+export default Topology1WithProvider;

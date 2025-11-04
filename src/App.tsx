@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
-import AddNodeOnEdgeDrop from './Iossif';
+import Topology1 from './Iossif';
 import CircleScheme1 from './KirilCircle/CircleScheme1';
 
 function App() {
@@ -21,10 +21,10 @@ function App() {
           }}
         >
           <Link
-            to="/AddNodeOnEdgeDrop"
+            to="/Topology-1"
             style={{ color: '#fff', textDecoration: 'none', fontWeight: 500 }}
           >
-            AddNodeOnEdgeDrop
+            Topology-1
           </Link>
           <Link
             to="/circle-scheme-1"
@@ -35,7 +35,7 @@ function App() {
         </nav>
         <div style={{ flex: 1, overflow: 'auto' }}>
           <Routes>
-            <Route path="/AddNodeOnEdgeDrop" element={<AddNodeOnEdgeDrop />} />
+            <Route path="/Topology-1" element={<Topology1 />} />
             <Route path="/circle-scheme-1" element={<CircleScheme1 />} />
           </Routes>
         </div>
