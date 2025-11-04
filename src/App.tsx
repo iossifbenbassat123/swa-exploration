@@ -21,13 +21,13 @@ function App() {
           }}
         >
           <Link
-            to="/Topology-1"
+            to="topology-1"
             style={{ color: '#fff', textDecoration: 'none', fontWeight: 500 }}
           >
             Topology-1
           </Link>
           <Link
-            to="/circle-scheme-1"
+            to="circle-scheme-1"
             style={{ color: '#fff', textDecoration: 'none', fontWeight: 500 }}
           >
             Circle Scheme 1
