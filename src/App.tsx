@@ -1,11 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { HashRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 import Topology1 from "./Iossif";
 import CircleScheme1 from "./KirilCircle/CircleScheme1";
 
 function App() {
   return (
-    <Router basename="/swa-exploration">
+    <Router>
       <div style={{ display: "flex", height: "100vh", margin: 0, padding: 0 }}>
         <nav
           style={{
@@ -21,13 +21,13 @@ function App() {
           }}
         >
           <Link
-            to="topology-1"
+            to="/topology-1"
             style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
           >
             Topology-1
           </Link>
           <Link
-            to="circle-scheme-1"
+            to="/circle-scheme-1"
             style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
           >
             Circle Scheme 1
@@ -43,8 +43,8 @@ function App() {
                 </div>
               }
             />
-            <Route path="topology-1" element={<Topology1 />} />
-            <Route path="circle-scheme-1" element={<CircleScheme1 />} />
+            <Route path="/topology-1" element={<Topology1 />} />
+            <Route path="/circle-scheme-1" element={<CircleScheme1 />} />
           </Routes>
         </div>
       </div>
