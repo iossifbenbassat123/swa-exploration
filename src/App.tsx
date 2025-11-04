@@ -6,10 +6,20 @@ import CircleScheme1 from "./KirilCircle/CircleScheme1";
 function App() {
   return (
     <Router>
-      <div style={{ display: "flex", height: "100vh", margin: 0, padding: 0 }}>
+      <div
+        style={{
+          display: "flex",
+          height: "100vh",
+          width: "100vw",
+          margin: 0,
+          padding: 0,
+          overflow: "hidden",
+        }}
+      >
         <nav
           style={{
             width: "200px",
+            minWidth: "200px",
             background: "#222",
             color: "#fff",
             padding: "1rem",
@@ -18,6 +28,8 @@ function App() {
             gap: "1rem",
             boxShadow: "2px 0 8px rgba(0,0,0,0.2)",
             margin: 0,
+            height: "100vh",
+            overflowY: "auto",
           }}
         >
           <Link
@@ -33,7 +45,7 @@ function App() {
             Circle Scheme 1
           </Link>
         </nav>
-        <div style={{ flex: 1, overflow: "auto" }}>
+        <div style={{ flex: 1, overflow: "auto", height: "100vh" }}>
           <Routes>
             <Route
               path="/"
