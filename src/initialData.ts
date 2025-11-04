@@ -1,19 +1,13 @@
 import type { Node, Edge } from "@xyflow/react";
 
 const PRIMARY_COLOR = "#2E6BFF";
-const BACKGROUND_COLOR = "#E3EBFF";
 
 export const initialNodes: Node[] = [
   {
     id: "0",
-    type: "input",
+    type: "root",
     data: { label: "dev.example.com" },
     position: { x: 300, y: 50 },
-    style: {
-      background: BACKGROUND_COLOR,
-      color: PRIMARY_COLOR,
-      border: `1px solid ${PRIMARY_COLOR}`,
-    },
   },
   {
     id: "1",
