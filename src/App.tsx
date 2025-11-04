@@ -35,8 +35,8 @@ function App() {
         </nav>
         <div style={{ flex: 1, overflow: 'auto' }}>
           <Routes>
-            <Route path="/Topology-1" element={<Topology1 />} />
-            <Route path="/circle-scheme-1" element={<CircleScheme1 />} />
+            <Route path="topology-1" element={<Topology1 />} />
+            <Route path="circle-scheme-1" element={<CircleScheme1 />} />
           </Routes>
         </div>
       </div>
