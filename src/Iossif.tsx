@@ -15,64 +15,19 @@ import {
   type OnConnectEnd,
   type NodeProps,
 } from "@xyflow/react";
+import CheckIcon from "./icons/CheckIcon";
+import ExclamationIcon from "./icons/ExclamationIcon";
+import ExclamationTriangleIcon from "./icons/ExclamationTriangleIcon";
+import { initialNodes, initialEdges } from "./initialData";
+import CustomConnectionLine from "./CustomConnectionLine";
 
 import "@xyflow/react/dist/style.css";
 
-const PRIMARY_COLOR = "#2E6BFF";
-const BACKGROUND_COLOR = "#E3EBFF";
 const TEXT_COLOR = "#363840";
 const HEALTHY_COLOR = "#689F38";
 const ERROR_COLOR = "#EF5350";
 const UNKNOWN_COLOR = "#F57F17";
-
-// Icon Components
-const CheckIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-    />
-  </svg>
-);
-
-const ExclamationIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
-    />
-  </svg>
-);
-
-const ExclamationTriangleIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-    />
-  </svg>
-);
+const BORDER_COLOR = "#D4D5D8";
 
 const ServerIcon = () => (
   <div
@@ -109,6 +64,10 @@ type ServerPoolData = {
   count?: number;
 };
 
+type ServerData = {
+  label: string;
+};
+
 // Custom Server Pool Node Component
 const ServerPoolNode = ({ data }: NodeProps<Node<ServerPoolData>>) => {
   const statusColor =
@@ -124,17 +83,78 @@ const ServerPoolNode = ({ data }: NodeProps<Node<ServerPoolData>>) => {
       <div
         style={{
           background: "#fff",
-          border: "2px solid #999",
+          border: `2px solid ${BORDER_COLOR}`,
           borderRadius: "8px",
           padding: "12px",
           display: "flex",
           alignItems: "center",
           gap: "12px",
           minWidth: "200px",
+          position: "relative",
         }}
       >
         {/* Server Icon */}
-        <ServerIcon />
+        <div style={{ position: "relative" }}>
+          <ServerIcon />
+          {/* Status Icon - Top Right of Server Icon */}
+          {data.status === "healthy" && (
+            <div
+              style={{
+                position: "absolute",
+                top: "-4px",
+                right: "-4px",
+                width: "16px",
+                height: "16px",
+                color: "#fff",
+                background: HEALTHY_COLOR,
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CheckIcon />
+            </div>
+          )}
+          {data.status === "errors" && (
+            <div
+              style={{
+                position: "absolute",
+                top: "-4px",
+                right: "-4px",
+                width: "16px",
+                height: "16px",
+                color: "#fff",
+                background: ERROR_COLOR,
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ExclamationIcon />
+            </div>
+          )}
+          {data.status === "unknown" && (
+            <div
+              style={{
+                position: "absolute",
+                top: "-4px",
+                right: "-4px",
+                width: "16px",
+                height: "16px",
+                color: "#fff",
+                background: UNKNOWN_COLOR,
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ExclamationTriangleIcon />
+            </div>
+          )}
+        </div>
 
         {/* Text Content */}
         <div style={{ flex: 1 }}>
@@ -164,80 +184,42 @@ const ServerPoolNode = ({ data }: NodeProps<Node<ServerPoolData>>) => {
   );
 };
 
-const nodeTypes = {
-  serverPool: ServerPoolNode,
+// Custom Server Node Component (Level 3)
+const ServerNode = ({ data }: NodeProps<Node<ServerData>>) => {
+  return (
+    <>
+      <Handle type="target" position={Position.Top} />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
+        <ServerIcon />
+        <div
+          style={{
+            fontSize: "12px",
+            color: "#000",
+            fontWeight: 500,
+            textAlign: "center",
+          }}
+        >
+          {data.label}
+        </div>
+      </div>
+      <Handle type="source" position={Position.Bottom} />
+    </>
+  );
 };
 
-const initialNodes: Node[] = [
-  {
-    id: "0",
-    type: "input",
-    data: { label: "dev.example.com" },
-    position: { x: 300, y: 50 },
-    style: {
-      background: BACKGROUND_COLOR,
-      color: PRIMARY_COLOR,
-      border: `1px solid ${PRIMARY_COLOR}`,
-    },
-  },
-  {
-    id: "1",
-    type: "serverPool",
-    data: { label: "server pool 001", status: "healthy" },
-    position: { x: 0, y: 200 },
-  },
-  {
-    id: "2",
-    type: "serverPool",
-    data: { label: "server pool 002", status: "errors", count: 25 },
-    position: { x: 250, y: 200 },
-  },
-  {
-    id: "3",
-    type: "serverPool",
-    data: { label: "server pool 003", status: "errors", count: 50 },
-    position: { x: 500, y: 200 },
-  },
-  {
-    id: "4",
-    type: "serverPool",
-    data: { label: "server pool 004", status: "unknown", count: 37 },
-    position: { x: 750, y: 200 },
-  },
-];
+const nodeTypes = {
+  serverPool: ServerPoolNode,
+  server: ServerNode,
+};
 
-const initialEdges: Edge[] = [
-  {
-    id: "e0-1",
-    source: "0",
-    target: "1",
-    type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
-  },
-  {
-    id: "e0-2",
-    source: "0",
-    target: "2",
-    type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
-  },
-  {
-    id: "e0-3",
-    source: "0",
-    target: "3",
-    type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
-  },
-  {
-    id: "e0-4",
-    source: "0",
-    target: "4",
-    type: "smoothstep",
-    style: { stroke: PRIMARY_COLOR },
-  },
-];
-
-let id = 5;
+let id = 13;
 const getId = () => `${id++}`;
 const nodeOrigin: [number, number] = [0.5, 0];
 
@@ -296,6 +278,7 @@ const AddNodeOnEdgeDrop = () => {
         onConnect={onConnect}
         onConnectEnd={onConnectEnd}
         nodeTypes={nodeTypes}
+        connectionLineComponent={CustomConnectionLine}
         fitView
         fitViewOptions={{ padding: 2 }}
         nodeOrigin={nodeOrigin}
