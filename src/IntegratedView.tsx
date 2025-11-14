@@ -1,133 +1,96 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import {
-  Background,
-  ReactFlow,
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  useReactFlow,
-  ReactFlowProvider,
-  type Connection,
-  type Edge,
-  type Node,
-  type OnConnectEnd,
-} from "@xyflow/react";
+import { useState, useMemo } from "react";
 import { Tree } from "primereact/tree";
 import type { TreeNode } from "primereact/treenode";
 import {
   infrastructure1,
   infrastructureToTree,
-  infrastructureToTopology,
   type InfrastructureNode,
 } from "./infrastructureData";
-import CustomConnectionLine from "./CustomConnectionLine";
-import ServerPoolNode from "./nodes/ServerPoolNode";
-import ServerNode from "./nodes/ServerNode";
-import RootNode from "./nodes/RootNode";
+import TopologyUsEast from "./TopologyUsEast";
+import TopologyEuWest from "./TopologyEuWest";
 
 import "@xyflow/react/dist/style.css";
 
-const nodeTypes = {
-  root: RootNode,
-  serverPool: ServerPoolNode,
-  server: ServerNode,
+// Map environment IDs to their topology components
+const topologyMap: Record<
+  string,
+  React.ComponentType<{
+    selectedId?: string | null;
+    onNodeClick?: (nodeId: string) => void;
+  }>
+> = {
+  "us-east": TopologyUsEast,
+  "eu-west": TopologyEuWest,
 };
 
-let id = 13;
-const getId = () => `${id++}`;
-const nodeOrigin: [number, number] = [0.5, 0];
-
-const IntegratedViewContent = () => {
-  const reactFlowWrapper = useRef(null);
-
-  const infrastructures = [infrastructure1];
-
-  // Create a combined tree with all infrastructures' nodes at top level
-  const [allTreeNodes] = useState<TreeNode[]>([
-    ...infrastructureToTree(infrastructure1),
-  ]);
-
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+const IntegratedView = () => {
+  const [selectedKey, setSelectedKey] = useState<string | null>("us-east");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Determine which infrastructure is selected based on the key
-  const getInfraFromKey = (key: string | null): number => {
-    if (!key) return -1;
-    // Check all nodes to find which infrastructure this key belongs to
-    for (let i = 0; i < infrastructures.length; i++) {
-      const checkNode = (nodes: InfrastructureNode[]): boolean => {
+  // Create tree from infrastructure
+  const allTreeNodes: TreeNode[] = useMemo(() => {
+    return infrastructureToTree(infrastructure1);
+  }, []);
+
+  // Determine which topology to show based on selected environment
+  const activeTopology = useMemo(() => {
+    // Find the top-level environment node
+    const findTopLevelEnv = (key: string | null): string | null => {
+      if (!key) return null;
+
+      // Check if the key itself is a top-level environment
+      const isTopLevel = infrastructure1.nodes.some((node) => node.id === key);
+      if (isTopLevel) return key;
+
+      // Find which top-level environment contains this key
+      for (const env of infrastructure1.nodes) {
+        const checkNode = (nodes: typeof infrastructure1.nodes): boolean => {
+          for (const node of nodes) {
+            if (node.id === key) return true;
+            if (node.children && checkNode(node.children)) return true;
+          }
+          return false;
+        };
+
+        if (env.children && checkNode(env.children)) {
+          return env.id;
+        }
+      }
+
+      return null;
+    };
+
+    const envId = findTopLevelEnv(selectedKey);
+    return envId && topologyMap[envId] ? topologyMap[envId] : TopologyUsEast;
+  }, [selectedKey]);
+
+  // Determine active environment ID for key
+  const activeEnvId = useMemo(() => {
+    if (!selectedKey) return null;
+
+    // Check if the key itself is a top-level environment
+    const isTopLevel = infrastructure1.nodes.some(
+      (node) => node.id === selectedKey
+    );
+    if (isTopLevel) return selectedKey;
+
+    // Find which top-level environment contains this key
+    for (const env of infrastructure1.nodes) {
+      const checkNode = (nodes: typeof infrastructure1.nodes): boolean => {
         for (const node of nodes) {
-          if (node.id === key) return true;
+          if (node.id === selectedKey) return true;
           if (node.children && checkNode(node.children)) return true;
         }
         return false;
       };
-      if (checkNode(infrastructures[i].nodes)) return i;
-    }
-    return -1;
-  };
 
-  const selectedInfraIndex = getInfraFromKey(selectedKey);
-  const currentInfra =
-    selectedInfraIndex >= 0 ? infrastructures[selectedInfraIndex] : null;
-
-  const { nodes: allNodes, edges: allEdges } = currentInfra
-    ? infrastructureToTopology(currentInfra)
-    : { nodes: [], edges: [] };
-
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(allNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(allEdges);
-  const { screenToFlowPosition, fitView } = useReactFlow();
-
-  // Update nodes and edges when infrastructure selection changes
-  useEffect(() => {
-    if (!currentInfra) {
-      setNodes([]);
-      setEdges([]);
-      return;
-    }
-    const { nodes: newNodes, edges: newEdges } =
-      infrastructureToTopology(currentInfra);
-    setNodes(newNodes);
-    setEdges(newEdges);
-    setTimeout(() => fitView({ padding: 0.2 }), 100);
-  }, [selectedInfraIndex, currentInfra, setNodes, setEdges, fitView]);
-
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  );
-
-  const onConnectEnd: OnConnectEnd = useCallback(
-    (event, connectionState) => {
-      if (!connectionState.isValid) {
-        const id = getId();
-        const { clientX, clientY } =
-          "changedTouches" in event ? event.changedTouches[0] : event;
-        const newNode: Node = {
-          id,
-          position: screenToFlowPosition({
-            x: clientX,
-            y: clientY,
-          }),
-          data: { label: `Node ${id}` },
-          origin: [0.5, 0.0],
-        };
-
-        setNodes((nds) => nds.concat(newNode));
-        if (connectionState.fromNode) {
-          setEdges((eds) =>
-            eds.concat({ id, source: connectionState.fromNode!.id, target: id })
-          );
-        }
+      if (env.children && checkNode(env.children)) {
+        return env.id;
       }
-    },
-    [screenToFlowPosition, setNodes, setEdges]
-  );
+    }
 
-  // Filtered nodes and edges based on selection
-  const [displayedNodes, setDisplayedNodes] = useState<Node[]>(nodes);
-  const [displayedEdges, setDisplayedEdges] = useState<Edge[]>(edges);
+    return null;
+  }, [selectedKey]);
 
   // Filter tree based on search query
   const filteredTreeNodes = useMemo(() => {
@@ -154,57 +117,32 @@ const IntegratedViewContent = () => {
     return filterTree(allTreeNodes);
   }, [searchQuery, allTreeNodes]);
 
-  // Filter topology based on selected tree node, search query, and highlight selected nodes
-  useEffect(() => {
-    let nodesToDisplay = nodes;
-    let edgesToDisplay = edges;
+  // Get the component to render
+  const TopologyComponent = activeTopology;
 
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const matchingNodeIds = nodes
-        .filter((node) => {
-          const label =
-            typeof node.data?.label === "string" ? node.data.label : "";
-          return label.toLowerCase().includes(searchQuery.toLowerCase());
-        })
-        .map((node) => node.id);
+  // Get selected node details from infrastructure
+  const selectedNodeDetails = useMemo(() => {
+    if (!selectedKey) return null;
 
-      nodesToDisplay = nodes.filter((node) =>
-        matchingNodeIds.includes(node.id)
-      );
-      edgesToDisplay = edges.filter(
-        (edge) =>
-          matchingNodeIds.includes(edge.source) &&
-          matchingNodeIds.includes(edge.target)
-      );
-    }
+    const findNode = (
+      nodes: InfrastructureNode[]
+    ): InfrastructureNode | null => {
+      for (const node of nodes) {
+        if (node.id === selectedKey) return node;
+        if (node.children) {
+          const found = findNode(node.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
 
-    // Apply selection highlighting
-    if (!selectedKey || !currentInfra) {
-      setDisplayedNodes(nodesToDisplay.map((n) => ({ ...n, selected: false })));
-      setDisplayedEdges(edgesToDisplay);
-      return;
-    }
+    return findNode(infrastructure1.nodes);
+  }, [selectedKey]);
 
-    // For top-level environment nodes, show the full infrastructure
-    const isTopLevel = currentInfra.nodes.some(
-      (node) => node.id === selectedKey
-    );
-    if (isTopLevel) {
-      setDisplayedNodes(nodesToDisplay.map((n) => ({ ...n, selected: false })));
-      setDisplayedEdges(edgesToDisplay);
-      return;
-    }
-
-    // For non-top-level selections, highlight the selected node
-    const updatedNodes = nodesToDisplay.map((node) => ({
-      ...node,
-      selected: node.id === selectedKey,
-    }));
-
-    setDisplayedNodes(updatedNodes);
-    setDisplayedEdges(edgesToDisplay);
-  }, [selectedKey, nodes, edges, currentInfra, searchQuery]);
+  const handleNodeClick = (nodeId: string) => {
+    setSelectedKey(nodeId);
+  };
 
   return (
     <div style={{ display: "flex", width: "100%", height: "100vh" }}>
@@ -328,29 +266,12 @@ const IntegratedViewContent = () => {
       </div>
 
       {/* Center Panel - Topology */}
-      <div
-        ref={reactFlowWrapper}
-        style={{
-          flex: 1,
-          background: "#fff",
-          position: "relative",
-        }}
-      >
-        <ReactFlow
-          nodes={displayedNodes}
-          edges={displayedEdges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onConnectEnd={onConnectEnd}
-          nodeTypes={nodeTypes}
-          connectionLineComponent={CustomConnectionLine}
-          fitView
-          fitViewOptions={{ padding: 2 }}
-          nodeOrigin={nodeOrigin}
-        >
-          <Background />
-        </ReactFlow>
+      <div style={{ width: "100%", height: "100%" }}>
+        <TopologyComponent
+          key={activeEnvId}
+          selectedId={selectedKey}
+          onNodeClick={handleNodeClick}
+        />
       </div>
 
       {/* Right Panel - Details */}
@@ -365,26 +286,91 @@ const IntegratedViewContent = () => {
         }}
       >
         <h3 style={{ margin: "0 0 1rem 0", fontSize: "1.1rem" }}>Details</h3>
-        {selectedKey ? (
+        {selectedKey && selectedNodeDetails ? (
           <div>
-            <p style={{ color: "#666", fontSize: "0.9rem" }}>
-              Selected: <strong>{selectedKey}</strong>
+            <div
+              style={{
+                padding: "0.75rem",
+                background: "#fff",
+                borderRadius: "4px",
+                marginBottom: "1rem",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <p
+                style={{
+                  color: "#111827",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  marginBottom: "0.5rem",
+                }}
+              >
+                {selectedNodeDetails.label}
+              </p>
+              <p
+                style={{
+                  color: "#6b7280",
+                  fontSize: "0.85rem",
+                  marginBottom: "0.25rem",
+                }}
+              >
+                <strong>ID:</strong> {selectedNodeDetails.id}
+              </p>
+              <p
+                style={{
+                  color: "#6b7280",
+                  fontSize: "0.85rem",
+                  marginBottom: "0.25rem",
+                }}
+              >
+                <strong>Type:</strong>{" "}
+                <span
+                  style={{
+                    padding: "0.125rem 0.5rem",
+                    background:
+                      selectedNodeDetails.type === "environment"
+                        ? "#dbeafe"
+                        : selectedNodeDetails.type === "serverPool"
+                        ? "#fef3c7"
+                        : "#ddd6fe",
+                    color:
+                      selectedNodeDetails.type === "environment"
+                        ? "#1e40af"
+                        : selectedNodeDetails.type === "serverPool"
+                        ? "#92400e"
+                        : "#5b21b6",
+                    borderRadius: "4px",
+                    fontSize: "0.8rem",
+                    fontWeight: 500,
+                  }}
+                >
+                  {selectedNodeDetails.type}
+                </span>
+              </p>
+            </div>
+            <p
+              style={{
+                color: "#6b7280",
+                fontSize: "0.85rem",
+                marginBottom: "0.5rem",
+              }}
+            >
+              <strong>Active Environment:</strong> {activeEnvId || "None"}
             </p>
+            {selectedNodeDetails.children && (
+              <p style={{ color: "#6b7280", fontSize: "0.85rem" }}>
+                <strong>Children:</strong> {selectedNodeDetails.children.length}
+              </p>
+            )}
           </div>
         ) : (
           <p style={{ color: "#999", fontSize: "0.9rem" }}>
-            Select an item from the tree to view details
+            Select an item from the tree or topology to view details
           </p>
         )}
       </div>
     </div>
   );
 };
-
-const IntegratedView = () => (
-  <ReactFlowProvider>
-    <IntegratedViewContent />
-  </ReactFlowProvider>
-);
 
 export default IntegratedView;
