@@ -93,7 +93,9 @@ function convertToTreeData(
 const CombinedView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [workloadDisplayLimit, setWorkloadDisplayLimit] = useState<Record<string, number>>({});
+  const [workloadDisplayLimit, setWorkloadDisplayLimit] = useState<
+    Record<string, number>
+  >({});
 
   // Convert infrastructure data to tree format with limits
   const treeData = useMemo(
@@ -228,7 +230,11 @@ const CombinedView = () => {
           alignItems: "center",
           padding: "0.375rem 0.5rem",
           cursor: "pointer",
-          background: isLoadMore ? "#f0f9ff" : isSelected ? "#e0f2fe" : "transparent",
+          background: isLoadMore
+            ? "#f0f9ff"
+            : isSelected
+            ? "#e0f2fe"
+            : "transparent",
           borderRadius: "4px",
           transition: "background 0.15s ease",
           ...style,
@@ -292,18 +298,20 @@ const CombinedView = () => {
         )}
 
         {/* Status indicator for workloads */}
-        {node.data.type === "workload" && node.data.status && !node.data.isLoadMore && (
-          <span
-            style={{
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              background: getStatusColor(node.data.status),
-              marginRight: "0.5rem",
-              flexShrink: 0,
-            }}
-          />
-        )}
+        {node.data.type === "workload" &&
+          node.data.status &&
+          !node.data.isLoadMore && (
+            <span
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: getStatusColor(node.data.status),
+                marginRight: "0.5rem",
+                flexShrink: 0,
+              }}
+            />
+          )}
 
         {/* Load More/Load All icon */}
         {node.data.isLoadMore && (
@@ -514,108 +522,138 @@ const CombinedView = () => {
             </p>
 
             {/* Show workload statistics for server pools */}
-            {selectedNode.type === "serverPool" && selectedNode.children && selectedNode.children.length > 0 && (
-              <div style={{ marginTop: "1rem" }}>
-                <p style={{ color: "#111827", fontSize: "0.9rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-                  Workload Status
-                </p>
-                {(() => {
-                  const healthyCount = selectedNode.children.filter(c => c.status === "healthy").length;
-                  const warningCount = selectedNode.children.filter(c => c.status === "warning").length;
-                  const errorCount = selectedNode.children.filter(c => c.status === "error").length;
-                  
-                  return (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            {selectedNode.type === "serverPool" &&
+              selectedNode.children &&
+              selectedNode.children.length > 0 && (
+                <div style={{ marginTop: "1rem" }}>
+                  <p
+                    style={{
+                      color: "#111827",
+                      fontSize: "0.9rem",
+                      fontWeight: 600,
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Workload Status
+                  </p>
+                  {(() => {
+                    const healthyCount = selectedNode.children.filter(
+                      (c) => c.status === "healthy"
+                    ).length;
+                    const warningCount = selectedNode.children.filter(
+                      (c) => c.status === "warning"
+                    ).length;
+                    const errorCount = selectedNode.children.filter(
+                      (c) => c.status === "error"
+                    ).length;
+
+                    return (
                       <div
                         style={{
-                          padding: "0.5rem",
-                          background: "#fff",
-                          border: "1px solid #e5e7eb",
-                          borderRadius: "4px",
                           display: "flex",
-                          alignItems: "center",
+                          flexDirection: "column",
                           gap: "0.5rem",
                         }}
                       >
-                        <span
+                        <div
                           style={{
-                            width: "8px",
-                            height: "8px",
-                            borderRadius: "50%",
-                            background: getStatusColor("healthy"),
-                            flexShrink: 0,
+                            padding: "0.5rem",
+                            background: "#fff",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
                           }}
-                        />
-                        <span style={{ color: "#111827", fontSize: "0.85rem" }}>
-                          Healthy: <strong>{healthyCount}</strong>
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          padding: "0.5rem",
-                          background: "#fff",
-                          border: "1px solid #e5e7eb",
-                          borderRadius: "4px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                        }}
-                      >
-                        <span
+                        >
+                          <span
+                            style={{
+                              width: "8px",
+                              height: "8px",
+                              borderRadius: "50%",
+                              background: getStatusColor("healthy"),
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{ color: "#111827", fontSize: "0.85rem" }}
+                          >
+                            Healthy: <strong>{healthyCount}</strong>
+                          </span>
+                        </div>
+                        <div
                           style={{
-                            width: "8px",
-                            height: "8px",
-                            borderRadius: "50%",
-                            background: getStatusColor("warning"),
-                            flexShrink: 0,
+                            padding: "0.5rem",
+                            background: "#fff",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
                           }}
-                        />
-                        <span style={{ color: "#111827", fontSize: "0.85rem" }}>
-                          Warning: <strong>{warningCount}</strong>
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          padding: "0.5rem",
-                          background: "#fff",
-                          border: "1px solid #e5e7eb",
-                          borderRadius: "4px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                        }}
-                      >
-                        <span
+                        >
+                          <span
+                            style={{
+                              width: "8px",
+                              height: "8px",
+                              borderRadius: "50%",
+                              background: getStatusColor("warning"),
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{ color: "#111827", fontSize: "0.85rem" }}
+                          >
+                            Warning: <strong>{warningCount}</strong>
+                          </span>
+                        </div>
+                        <div
                           style={{
-                            width: "8px",
-                            height: "8px",
-                            borderRadius: "50%",
-                            background: getStatusColor("error"),
-                            flexShrink: 0,
+                            padding: "0.5rem",
+                            background: "#fff",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
                           }}
-                        />
-                        <span style={{ color: "#111827", fontSize: "0.85rem" }}>
-                          Error: <strong>{errorCount}</strong>
-                        </span>
+                        >
+                          <span
+                            style={{
+                              width: "8px",
+                              height: "8px",
+                              borderRadius: "50%",
+                              background: getStatusColor("error"),
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{ color: "#111827", fontSize: "0.85rem" }}
+                          >
+                            Error: <strong>{errorCount}</strong>
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            padding: "0.5rem",
+                            background: "#f9fafb",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "4px",
+                            marginTop: "0.5rem",
+                          }}
+                        >
+                          <span
+                            style={{ color: "#6b7280", fontSize: "0.85rem" }}
+                          >
+                            Total:{" "}
+                            <strong>{selectedNode.children.length}</strong>
+                          </span>
+                        </div>
                       </div>
-                      <div
-                        style={{
-                          padding: "0.5rem",
-                          background: "#f9fafb",
-                          border: "1px solid #e5e7eb",
-                          borderRadius: "4px",
-                          marginTop: "0.5rem",
-                        }}
-                      >
-                        <span style={{ color: "#6b7280", fontSize: "0.85rem" }}>
-                          Total: <strong>{selectedNode.children.length}</strong>
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
+                    );
+                  })()}
+                </div>
+              )}
           </div>
         ) : (
           <p style={{ color: "#999", fontSize: "0.9rem" }}>
