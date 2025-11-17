@@ -127,7 +127,9 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
   // ID mapping includes workload-to-group mappings
   const idMapping: Record<string, string> = useMemo(() => {
     const mapping: Record<string, string> = { "us-east": "us-east-root" };
-    const usEastEnv = INFRASTRUCTURE.nodes.find((n: InfrastructureNode) => n.id === "us-east");
+    const usEastEnv = INFRASTRUCTURE.nodes.find(
+      (n: InfrastructureNode) => n.id === "us-east"
+    );
 
     usEastEnv?.children?.forEach((pool: InfrastructureNode) => {
       mapping[pool.id] = pool.id;

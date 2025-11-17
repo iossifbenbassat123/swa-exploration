@@ -127,7 +127,9 @@ const TopologyEuWest = ({ selectedId, onNodeClick }: TopologyEuWestProps) => {
   // ID mapping includes workload-to-group mappings
   const idMapping: Record<string, string> = useMemo(() => {
     const mapping: Record<string, string> = { "eu-west": "eu-west-root" };
-    const euWestEnv = INFRASTRUCTURE.nodes.find((n: InfrastructureNode) => n.id === "eu-west");
+    const euWestEnv = INFRASTRUCTURE.nodes.find(
+      (n: InfrastructureNode) => n.id === "eu-west"
+    );
 
     euWestEnv?.children?.forEach((pool: InfrastructureNode) => {
       mapping[pool.id] = pool.id;

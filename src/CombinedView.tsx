@@ -233,7 +233,9 @@ const CombinedView = () => {
           INFRASTRUCTURE.nodes.find(
             (env: InfrastructureNode) =>
               env.id === node.id &&
-              env.children?.some((pool: InfrastructureNode) => pool.id === expandedPoolId)
+              env.children?.some(
+                (pool: InfrastructureNode) => pool.id === expandedPoolId
+              )
           )));
 
     // Calculate sticky position based on node level
