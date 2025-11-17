@@ -42,7 +42,6 @@ const TopologyEuWest = ({ selectedId, onNodeClick }: TopologyEuWestProps) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(euWestEdges);
   const { screenToFlowPosition } = useReactFlow();
 
-  // Map infrastructure IDs to topology node IDs
   const idMapping: Record<string, string> = {
     "eu-west": "eu-west-root",
     "eu-west-pool-1": "eu-west-pool-1",

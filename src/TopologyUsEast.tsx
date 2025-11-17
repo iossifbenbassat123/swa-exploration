@@ -42,7 +42,6 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(usEastEdges);
   const { screenToFlowPosition } = useReactFlow();
 
-  // Map infrastructure IDs to topology node IDs
   const idMapping: Record<string, string> = {
     "us-east": "us-east-root",
     "us-east-pool-1": "us-east-pool-1",

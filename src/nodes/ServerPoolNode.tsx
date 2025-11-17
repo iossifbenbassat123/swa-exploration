@@ -45,7 +45,10 @@ export type ServerPoolData = {
 };
 
 // Custom Server Pool Node Component
-const ServerPoolNode = ({ data }: NodeProps<Node<ServerPoolData>>) => {
+const ServerPoolNode = ({
+  data,
+  selected,
+}: NodeProps<Node<ServerPoolData>>) => {
   const statusColor =
     data.status === "healthy"
       ? HEALTHY_COLOR
@@ -59,7 +62,9 @@ const ServerPoolNode = ({ data }: NodeProps<Node<ServerPoolData>>) => {
       <div
         style={{
           background: "#fff",
-          border: `2px solid ${BORDER_COLOR}`,
+          border: `${selected ? "3px" : "2px"} solid ${
+            selected ? "#1E40AF" : BORDER_COLOR
+          }`,
           borderRadius: "8px",
           padding: "12px",
           display: "flex",
@@ -67,6 +72,9 @@ const ServerPoolNode = ({ data }: NodeProps<Node<ServerPoolData>>) => {
           gap: "12px",
           minWidth: "200px",
           position: "relative",
+          cursor: "pointer",
+          boxShadow: selected ? "0 0 0 3px rgba(30, 64, 175, 0.1)" : "none",
+          transition: "all 0.2s ease",
         }}
       >
         {/* Server Icon */}

@@ -32,7 +32,7 @@ export type ServerData = {
 };
 
 // Custom Server Node Component (Level 3)
-const ServerNode = ({ data }: NodeProps<Node<ServerData>>) => {
+const ServerNode = ({ data, selected }: NodeProps<Node<ServerData>>) => {
   const statusColor =
     data.status === "healthy"
       ? HEALTHY_COLOR
@@ -51,6 +51,12 @@ const ServerNode = ({ data }: NodeProps<Node<ServerData>>) => {
           flexDirection: "column",
           alignItems: "center",
           gap: "8px",
+          cursor: "pointer",
+          padding: "4px",
+          borderRadius: "8px",
+          border: `2px solid ${selected ? "#1E40AF" : "transparent"}`,
+          background: selected ? "rgba(30, 64, 175, 0.05)" : "transparent",
+          transition: "all 0.2s ease",
         }}
       >
         <div style={{ position: "relative" }}>
