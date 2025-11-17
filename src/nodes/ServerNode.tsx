@@ -6,7 +6,7 @@ import DockerIcon from "../icons/DockerIcon";
 
 const HEALTHY_COLOR = "#689F38";
 const ERROR_COLOR = "#EF5350";
-const UNKNOWN_COLOR = "#F57F17";
+const WARNING_COLOR = "#F57F17";
 
 const ServerIcon = () => (
   <div
@@ -28,7 +28,9 @@ const ServerIcon = () => (
 
 export type ServerData = {
   label: string;
-  status?: "healthy" | "error" | "unknown";
+  status?: "healthy" | "error" | "warning";
+  count?: number;
+  workloads?: any[];
 };
 
 // Custom Server Node Component (Level 3)
@@ -38,9 +40,11 @@ const ServerNode = ({ data, selected }: NodeProps<Node<ServerData>>) => {
       ? HEALTHY_COLOR
       : data.status === "error"
       ? ERROR_COLOR
-      : data.status === "unknown"
-      ? UNKNOWN_COLOR
+      : data.status === "warning"
+      ? WARNING_COLOR
       : undefined;
+
+  const isStacked = data.count && data.count > 1;
 
   return (
     <>
@@ -60,6 +64,37 @@ const ServerNode = ({ data, selected }: NodeProps<Node<ServerData>>) => {
         }}
       >
         <div style={{ position: "relative" }}>
+          {/* Stacked effect - show multiple layers behind */}
+          {isStacked && (
+            <>
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-4px",
+                  left: "-4px",
+                  width: "40px",
+                  height: "40px",
+                  background: "#E3F9FF",
+                  borderRadius: "6px",
+                  opacity: 0.5,
+                  zIndex: -2,
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-2px",
+                  left: "-2px",
+                  width: "40px",
+                  height: "40px",
+                  background: "#E3F9FF",
+                  borderRadius: "6px",
+                  opacity: 0.7,
+                  zIndex: -1,
+                }}
+              />
+            </>
+          )}
           <ServerIcon />
           {/* Status Icon - Top Right of Server Icon */}
           {data.status === "healthy" && (
@@ -102,7 +137,7 @@ const ServerNode = ({ data, selected }: NodeProps<Node<ServerData>>) => {
               <ExclamationIcon />
             </div>
           )}
-          {data.status === "unknown" && (
+          {data.status === "warning" && (
             <div
               style={{
                 position: "absolute",
@@ -111,7 +146,7 @@ const ServerNode = ({ data, selected }: NodeProps<Node<ServerData>>) => {
                 width: "16px",
                 height: "16px",
                 color: "#fff",
-                background: UNKNOWN_COLOR,
+                background: WARNING_COLOR,
                 borderRadius: "50%",
                 display: "flex",
                 alignItems: "center",
@@ -120,6 +155,30 @@ const ServerNode = ({ data, selected }: NodeProps<Node<ServerData>>) => {
               }}
             >
               <ExclamationTriangleIcon />
+            </div>
+          )}
+          {/* Count badge for stacked nodes */}
+          {isStacked && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: "-4px",
+                right: "-4px",
+                minWidth: "20px",
+                height: "20px",
+                padding: "0 4px",
+                background: "#1E40AF",
+                color: "#fff",
+                borderRadius: "10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "11px",
+                fontWeight: "bold",
+                border: "2px solid white",
+              }}
+            >
+              {data.count}
             </div>
           )}
         </div>

@@ -5,6 +5,7 @@ export interface InfrastructureNode {
   id: string;
   label: string;
   type: "environment" | "serverPool" | "workload";
+  status?: "healthy" | "warning" | "error";
   children?: InfrastructureNode[];
   metadata?: Record<string, unknown>;
 }
@@ -29,23 +30,31 @@ export const infrastructure1: Infrastructure = {
           id: "us-east-pool-1",
           label: "Web Tier Pool",
           type: "serverPool",
-          children: [
-            {
-              id: "us-east-pool-1-w1",
-              label: "aws-nginx-frontend-1",
-              type: "workload",
-            },
-            {
-              id: "us-east-pool-1-w2",
-              label: "aws-nginx-frontend-2",
-              type: "workload",
-            },
-            {
-              id: "us-east-pool-1-w3",
-              label: "aws-react-ui-1",
-              type: "workload",
-            },
-          ],
+          children: (() => {
+            const workloads: InfrastructureNode[] = [];
+            const statuses: Array<"healthy" | "warning" | "error"> = [
+              "healthy",
+              "warning",
+              "error",
+            ];
+            
+            for (let i = 1; i <= 1000; i++) {
+              // Distribute: 70% healthy, 20% warning, 10% error
+              let status: "healthy" | "warning" | "error";
+              const rand = Math.random();
+              if (rand < 0.7) status = "healthy";
+              else if (rand < 0.9) status = "warning";
+              else status = "error";
+
+              workloads.push({
+                id: `us-east-pool-1-w${i}`,
+                label: `workload-${i}`,
+                type: "workload",
+                status,
+              });
+            }
+            return workloads;
+          })(),
         },
         {
           id: "us-east-pool-2",
@@ -56,11 +65,19 @@ export const infrastructure1: Infrastructure = {
               id: "us-east-pool-2-w1",
               label: "aws-api-gateway-1",
               type: "workload",
+              status: "healthy",
             },
             {
               id: "us-east-pool-2-w2",
+              label: "aws-api-gateway-2",
+              type: "workload",
+              status: "healthy",
+            },
+            {
+              id: "us-east-pool-2-w3",
               label: "aws-kong-gateway-1",
               type: "workload",
+              status: "warning",
             },
           ],
         },
@@ -73,16 +90,19 @@ export const infrastructure1: Infrastructure = {
               id: "us-east-pool-3-w1",
               label: "aws-postgres-primary",
               type: "workload",
+              status: "healthy",
             },
             {
               id: "us-east-pool-3-w2",
               label: "aws-postgres-replica-1",
               type: "workload",
+              status: "healthy",
             },
             {
               id: "us-east-pool-3-w3",
               label: "aws-redis-cache",
               type: "workload",
+              status: "error",
             },
           ],
         },
@@ -102,11 +122,13 @@ export const infrastructure1: Infrastructure = {
               id: "eu-west-pool-1-w1",
               label: "aws-nginx-frontend-1",
               type: "workload",
+              status: "healthy",
             },
             {
               id: "eu-west-pool-1-w2",
               label: "aws-nginx-frontend-2",
               type: "workload",
+              status: "healthy",
             },
           ],
         },
@@ -119,11 +141,13 @@ export const infrastructure1: Infrastructure = {
               id: "eu-west-pool-2-w1",
               label: "aws-postgres-replica-2",
               type: "workload",
+              status: "healthy",
             },
             {
               id: "eu-west-pool-2-w2",
               label: "aws-redis-cache",
               type: "workload",
+              status: "warning",
             },
           ],
         },

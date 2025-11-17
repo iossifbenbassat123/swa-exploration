@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useMemo } from "react";
 import {
   Background,
   ReactFlow,
@@ -12,7 +12,7 @@ import {
   type Node,
   type OnConnectEnd,
 } from "@xyflow/react";
-import { usEastNodes, usEastEdges } from "./usEastData";
+import { infrastructure1 } from "./infrastructureData";
 import CustomConnectionLine from "./CustomConnectionLine";
 import ServerPoolNode from "./nodes/ServerPoolNode";
 import ServerNode from "./nodes/ServerNode";
@@ -38,32 +38,133 @@ interface TopologyUsEastProps {
 const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
   const reactFlowWrapper = useRef(null);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(usEastNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(usEastEdges);
+  // Generate nodes and edges from infrastructure data
+  const { initialNodes, initialEdges } = useMemo(() => {
+    const usEastEnv = infrastructure1.nodes.find((n) => n.id === "us-east");
+    if (!usEastEnv) return { initialNodes: [], initialEdges: [] };
+
+    const nodes: Node[] = [];
+    const edges: Edge[] = [];
+
+    // Root node
+    nodes.push({
+      id: "us-east-root",
+      type: "root",
+      data: { label: usEastEnv.label },
+      position: { x: 400, y: 50 },
+    });
+
+    // Server pools
+    const pools = usEastEnv.children || [];
+    pools.forEach((pool, poolIndex) => {
+      const poolX = 100 + poolIndex * 300;
+      nodes.push({
+        id: pool.id,
+        type: "serverPool",
+        data: { label: pool.label, status: "healthy" },
+        position: { x: poolX, y: 200 },
+      });
+
+      edges.push({
+        id: `us-east-root-${pool.id}`,
+        source: "us-east-root",
+        target: pool.id,
+      });
+
+      // Group workloads by status
+      const workloads = pool.children || [];
+      const statusGroups: Record<string, typeof workloads> = {
+        healthy: [],
+        warning: [],
+        error: [],
+      };
+
+      workloads.forEach((workload) => {
+        const status = workload.status || "healthy";
+        statusGroups[status].push(workload);
+      });
+
+      // Create stacked nodes for each status group
+      let groupIndex = 0;
+      Object.entries(statusGroups).forEach(([status, group]) => {
+        if (group.length > 0) {
+          const groupId = `${pool.id}-${status}-group`;
+          const count = group.length;
+
+          nodes.push({
+            id: groupId,
+            type: "server",
+            data: {
+              label: count > 1 ? `${count}x ${status}` : group[0].label,
+              status: status as "healthy" | "warning" | "error",
+              count: count > 1 ? count : undefined,
+              workloads: group,
+            },
+            position: { x: poolX - 100 + groupIndex * 100, y: 350 },
+          });
+
+          edges.push({
+            id: `${pool.id}-${groupId}`,
+            source: pool.id,
+            target: groupId,
+          });
+
+          groupIndex++;
+        }
+      });
+    });
+
+    return { initialNodes: nodes, initialEdges: edges };
+  }, []);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   const { screenToFlowPosition } = useReactFlow();
 
-  const idMapping: Record<string, string> = {
-    "us-east": "us-east-root",
-    "us-east-pool-1": "us-east-pool-1",
-    "us-east-pool-2": "us-east-pool-2",
-    "us-east-pool-3": "us-east-pool-3",
-    "us-east-pool-1-w1": "us-east-server-1",
-    "us-east-pool-1-w2": "us-east-server-2",
-    "us-east-pool-1-w3": "us-east-server-3",
-    "us-east-pool-2-w1": "us-east-server-4",
-    "us-east-pool-2-w2": "us-east-server-5",
-    "us-east-pool-3-w1": "us-east-server-6",
-    "us-east-pool-3-w2": "us-east-server-7",
-    "us-east-pool-3-w3": "us-east-server-8",
-  };
+  // ID mapping includes workload-to-group mappings
+  const idMapping: Record<string, string> = useMemo(() => {
+    const mapping: Record<string, string> = { "us-east": "us-east-root" };
+    const usEastEnv = infrastructure1.nodes.find((n) => n.id === "us-east");
+    
+    usEastEnv?.children?.forEach((pool) => {
+      mapping[pool.id] = pool.id;
+      
+      // Group workloads by status
+      const workloads = pool.children || [];
+      const statusGroups: Record<string, typeof workloads> = {
+        healthy: [],
+        warning: [],
+        error: [],
+      };
+
+      workloads.forEach((workload) => {
+        const status = workload.status || "healthy";
+        statusGroups[status].push(workload);
+      });
+
+      // Map each workload to its group
+      Object.entries(statusGroups).forEach(([status, group]) => {
+        if (group.length > 0) {
+          const groupId = `${pool.id}-${status}-group`;
+          group.forEach((workload) => {
+            mapping[workload.id] = groupId;
+          });
+        }
+      });
+    });
+    
+    return mapping;
+  }, []);
 
   // Reverse mapping for clicks from topology to tree
-  const reverseIdMapping: Record<string, string> = Object.entries(
-    idMapping
-  ).reduce((acc, [key, value]) => {
-    acc[value] = key;
-    return acc;
-  }, {} as Record<string, string>);
+  const reverseIdMapping: Record<string, string> = useMemo(
+    () =>
+      Object.entries(idMapping).reduce((acc, [key, value]) => {
+        acc[value] = key;
+        return acc;
+      }, {} as Record<string, string>),
+    [idMapping]
+  );
 
   // Update node selection when selectedId changes
   useEffect(() => {
@@ -74,7 +175,7 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
         selected: node.id === topologyNodeId,
       }))
     );
-  }, [selectedId, setNodes]);
+  }, [selectedId, setNodes, idMapping]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -135,7 +236,8 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
         nodeTypes={nodeTypes}
         connectionLineComponent={CustomConnectionLine}
         fitView
-        fitViewOptions={{ padding: 2 }}
+        fitViewOptions={{ padding: 0.5, maxZoom: 1.2, minZoom: 0.5 }}
+        defaultViewport={{ x: 0, y: 0, zoom: 1.2 }}
         nodeOrigin={nodeOrigin}
       >
         <Background />

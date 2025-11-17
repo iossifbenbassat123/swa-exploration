@@ -3,7 +3,7 @@ import "./App.css";
 import Topology1 from "./Iossif";
 import CircleScheme1 from "./KirilCircle/CircleScheme1";
 import TreeExample from "./TreeExample";
-import IntegratedView from "./IntegratedView";
+import CombinedView from "./CombinedView";
 
 function App() {
   return (
@@ -53,10 +53,10 @@ function App() {
             Tree Example
           </Link>
           <Link
-            to="/integrated-view"
+            to="/combined"
             style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
           >
-            Integrated View
+            Combined
           </Link>
         </nav>
         <div style={{ flex: 1, overflow: "auto", height: "100vh" }}>
@@ -72,7 +72,7 @@ function App() {
             <Route path="/topology-1" element={<Topology1 />} />
             <Route path="/circle-scheme-1" element={<CircleScheme1 />} />
             <Route path="/tree-example" element={<TreeExample />} />
-            <Route path="/integrated-view" element={<IntegratedView />} />
+            <Route path="/combined" element={<CombinedView />} />
           </Routes>
         </div>
       </div>
