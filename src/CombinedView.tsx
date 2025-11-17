@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Tree, type NodeRendererProps } from "react-arborist";
-import { infrastructure1, type InfrastructureNode } from "./infrastructureData";
+import type { InfrastructureNode } from "./infrastructureData";
+import { INFRASTRUCTURE } from "./constants";
 import TopologyUsEast from "./TopologyUsEast";
 import TopologyEuWest from "./TopologyEuWest";
 
@@ -96,10 +97,11 @@ const CombinedView = () => {
   const [workloadDisplayLimit, setWorkloadDisplayLimit] = useState<
     Record<string, number>
   >({});
+  const [expandedPoolId, setExpandedPoolId] = useState<string | null>(null);
 
   // Convert infrastructure data to tree format with limits
   const treeData = useMemo(
-    () => convertToTreeData(infrastructure1.nodes, workloadDisplayLimit),
+    () => convertToTreeData(INFRASTRUCTURE.nodes, workloadDisplayLimit),
     [workloadDisplayLimit]
   );
 
@@ -119,7 +121,7 @@ const CombinedView = () => {
   };
 
   const selectedNode = selectedId
-    ? findNode(infrastructure1.nodes, selectedId)
+    ? findNode(INFRASTRUCTURE.nodes, selectedId)
     : null;
 
   // Determine which topology to show based on selected environment
@@ -129,12 +131,12 @@ const CombinedView = () => {
       if (!key) return null;
 
       // Check if the key itself is a top-level environment
-      const isTopLevel = infrastructure1.nodes.some((node) => node.id === key);
+      const isTopLevel = INFRASTRUCTURE.nodes.some((node) => node.id === key);
       if (isTopLevel) return key;
 
       // Find which top-level environment contains this key
-      for (const env of infrastructure1.nodes) {
-        const checkNode = (nodes: typeof infrastructure1.nodes): boolean => {
+      for (const env of INFRASTRUCTURE.nodes) {
+        const checkNode = (nodes: typeof INFRASTRUCTURE.nodes): boolean => {
           for (const node of nodes) {
             if (node.id === key) return true;
             if (node.children && checkNode(node.children)) return true;
@@ -159,14 +161,14 @@ const CombinedView = () => {
     if (!selectedId) return null;
 
     // Check if the key itself is a top-level environment
-    const isTopLevel = infrastructure1.nodes.some(
-      (node) => node.id === selectedId
+    const isTopLevel = INFRASTRUCTURE.nodes.some(
+      (node: InfrastructureNode) => node.id === selectedId
     );
     if (isTopLevel) return selectedId;
 
     // Find which top-level environment contains this key
-    for (const env of infrastructure1.nodes) {
-      const checkNode = (nodes: typeof infrastructure1.nodes): boolean => {
+    for (const env of INFRASTRUCTURE.nodes) {
+      const checkNode = (nodes: typeof INFRASTRUCTURE.nodes): boolean => {
         for (const node of nodes) {
           if (node.id === selectedId) return true;
           if (node.children && checkNode(node.children)) return true;
@@ -223,6 +225,25 @@ const CombinedView = () => {
     const isSelected = node.id === selectedId;
     const isLoadMore = node.data.isLoadMore;
 
+    // Check if this node should be sticky (parent of expanded pool)
+    const isParentOfExpandedPool =
+      expandedPoolId &&
+      (node.id === expandedPoolId ||
+        (expandedPoolId &&
+          INFRASTRUCTURE.nodes.find(
+            (env: InfrastructureNode) =>
+              env.id === node.id &&
+              env.children?.some((pool: InfrastructureNode) => pool.id === expandedPoolId)
+          )));
+
+    // Calculate sticky position based on node level
+    const getStickyTop = () => {
+      if (!isParentOfExpandedPool) return undefined;
+      if (node.data.type === "environment") return 0;
+      if (node.data.type === "serverPool") return 36; // height of one row
+      return undefined;
+    };
+
     return (
       <div
         style={{
@@ -234,9 +255,18 @@ const CombinedView = () => {
             ? "#f0f9ff"
             : isSelected
             ? "#e0f2fe"
+            : isParentOfExpandedPool
+            ? "#f9fafb"
             : "transparent",
           borderRadius: "4px",
           transition: "background 0.15s ease",
+          position: isParentOfExpandedPool ? "sticky" : "relative",
+          top: getStickyTop(),
+          zIndex: isParentOfExpandedPool
+            ? node.data.type === "environment"
+              ? 12
+              : 11
+            : 1,
           ...style,
         }}
         ref={dragHandle}
@@ -248,15 +278,28 @@ const CombinedView = () => {
                 ...prev,
                 [node.data.poolId!]: node.data.totalCount || Infinity,
               }));
+              setExpandedPoolId(node.data.poolId);
             } else {
               // Load 20 more workloads
               setWorkloadDisplayLimit((prev) => ({
                 ...prev,
                 [node.data.poolId!]: (prev[node.data.poolId!] || 10) + 20,
               }));
+              setExpandedPoolId(node.data.poolId);
             }
           } else {
             setSelectedId(node.id);
+            // Track if we're in a workload view
+            if (node.data.type === "workload" && !node.data.isLoadMore) {
+              const poolMatch = node.id.match(/^(.+-pool-\d+)-w\d+$/);
+              if (poolMatch) {
+                setExpandedPoolId(poolMatch[1]);
+              }
+            } else if (node.data.type === "serverPool") {
+              setExpandedPoolId(node.id);
+            } else if (node.data.type === "environment") {
+              setExpandedPoolId(null);
+            }
           }
         }}
         onMouseEnter={(e) => {

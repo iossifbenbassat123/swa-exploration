@@ -33,7 +33,7 @@ export const infrastructure1: Infrastructure = {
           children: (() => {
             const workloads: InfrastructureNode[] = [];
 
-            for (let i = 1; i <= 10000; i++) {
+            for (let i = 1; i <= 100000; i++) {
               // Distribute: 70% healthy, 20% warning, 10% error
               let status: "healthy" | "warning" | "error";
               const rand = Math.random();

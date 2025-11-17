@@ -12,7 +12,8 @@ import {
   type Node,
   type OnConnectEnd,
 } from "@xyflow/react";
-import { infrastructure1 } from "./infrastructureData";
+import { INFRASTRUCTURE } from "./constants";
+import type { InfrastructureNode } from "./infrastructureData";
 import CustomConnectionLine from "./CustomConnectionLine";
 import ServerPoolNode from "./nodes/ServerPoolNode";
 import ServerNode from "./nodes/ServerNode";
@@ -40,7 +41,9 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
 
   // Generate nodes and edges from infrastructure data
   const { initialNodes, initialEdges } = useMemo(() => {
-    const usEastEnv = infrastructure1.nodes.find((n) => n.id === "us-east");
+    const usEastEnv = INFRASTRUCTURE.nodes.find(
+      (node: InfrastructureNode) => node.id === "us-east"
+    );
     if (!usEastEnv) return { initialNodes: [], initialEdges: [] };
 
     const nodes: Node[] = [];
@@ -56,7 +59,7 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
 
     // Server pools
     const pools = usEastEnv.children || [];
-    pools.forEach((pool, poolIndex) => {
+    pools.forEach((pool: InfrastructureNode, poolIndex: number) => {
       const poolX = 100 + poolIndex * 300;
       nodes.push({
         id: pool.id,
@@ -124,9 +127,9 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
   // ID mapping includes workload-to-group mappings
   const idMapping: Record<string, string> = useMemo(() => {
     const mapping: Record<string, string> = { "us-east": "us-east-root" };
-    const usEastEnv = infrastructure1.nodes.find((n) => n.id === "us-east");
+    const usEastEnv = INFRASTRUCTURE.nodes.find((n: InfrastructureNode) => n.id === "us-east");
 
-    usEastEnv?.children?.forEach((pool) => {
+    usEastEnv?.children?.forEach((pool: InfrastructureNode) => {
       mapping[pool.id] = pool.id;
 
       // Group workloads by status
@@ -137,7 +140,7 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
         error: [],
       };
 
-      workloads.forEach((workload) => {
+      workloads.forEach((workload: InfrastructureNode) => {
         const status = workload.status || "healthy";
         statusGroups[status].push(workload);
       });
@@ -146,7 +149,7 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
       Object.entries(statusGroups).forEach(([status, group]) => {
         if (group.length > 0) {
           const groupId = `${pool.id}-${status}-group`;
-          group.forEach((workload) => {
+          group.forEach((workload: InfrastructureNode) => {
             mapping[workload.id] = groupId;
           });
         }
