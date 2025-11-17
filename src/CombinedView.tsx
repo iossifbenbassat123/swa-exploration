@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Tree, type NodeRendererProps } from "react-arborist";
 import type { InfrastructureNode } from "./infrastructureData";
 import { INFRASTRUCTURE } from "./constants";
@@ -94,10 +94,20 @@ function convertToTreeData(
 const CombinedView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [workloadDisplayLimit, setWorkloadDisplayLimit] = useState<
     Record<string, number>
   >({});
   const [expandedPoolId, setExpandedPoolId] = useState<string | null>(null);
+
+  // Debounce search term to prevent crashes with large datasets
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Convert infrastructure data to tree format with limits
   const treeData = useMemo(
@@ -462,7 +472,7 @@ const CombinedView = () => {
             height={window.innerHeight - 120}
             indent={24}
             rowHeight={36}
-            searchTerm={searchTerm}
+            searchTerm={debouncedSearchTerm}
             searchMatch={(node, term) =>
               node.data.name.toLowerCase().includes(term.toLowerCase())
             }
