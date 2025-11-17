@@ -125,10 +125,10 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
   const idMapping: Record<string, string> = useMemo(() => {
     const mapping: Record<string, string> = { "us-east": "us-east-root" };
     const usEastEnv = infrastructure1.nodes.find((n) => n.id === "us-east");
-    
+
     usEastEnv?.children?.forEach((pool) => {
       mapping[pool.id] = pool.id;
-      
+
       // Group workloads by status
       const workloads = pool.children || [];
       const statusGroups: Record<string, typeof workloads> = {
@@ -152,7 +152,7 @@ const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
         }
       });
     });
-    
+
     return mapping;
   }, []);
 

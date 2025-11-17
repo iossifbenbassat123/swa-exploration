@@ -32,13 +32,8 @@ export const infrastructure1: Infrastructure = {
           type: "serverPool",
           children: (() => {
             const workloads: InfrastructureNode[] = [];
-            const statuses: Array<"healthy" | "warning" | "error"> = [
-              "healthy",
-              "warning",
-              "error",
-            ];
-            
-            for (let i = 1; i <= 1000; i++) {
+
+            for (let i = 1; i <= 10000; i++) {
               // Distribute: 70% healthy, 20% warning, 10% error
               let status: "healthy" | "warning" | "error";
               const rand = Math.random();

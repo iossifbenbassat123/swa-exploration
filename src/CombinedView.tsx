@@ -25,24 +25,81 @@ interface TreeData {
   type: "environment" | "serverPool" | "workload";
   status?: "healthy" | "warning" | "error";
   children?: TreeData[];
+  isLoadMore?: boolean;
+  isLoadAll?: boolean;
+  poolId?: string;
+  totalCount?: number;
 }
 
-function convertToTreeData(nodes: InfrastructureNode[]): TreeData[] {
-  return nodes.map((node) => ({
-    id: node.id,
-    name: node.label,
-    type: node.type,
-    status: node.status,
-    children: node.children ? convertToTreeData(node.children) : undefined,
-  }));
+function convertToTreeData(
+  nodes: InfrastructureNode[],
+  workloadLimits: Record<string, number> = {}
+): TreeData[] {
+  return nodes.map((node) => {
+    let children: TreeData[] | undefined;
+
+    if (node.children) {
+      // If this is a serverPool with many workloads, limit them
+      if (node.type === "serverPool" && node.children.length > 10) {
+        const limit = workloadLimits[node.id] || 10;
+        const displayedChildren = node.children.slice(0, limit);
+        const hasMore = limit < node.children.length;
+
+        children = displayedChildren.map((child) => ({
+          id: child.id,
+          name: child.label,
+          type: child.type,
+          status: child.status,
+          children: child.children
+            ? convertToTreeData(child.children, workloadLimits)
+            : undefined,
+        }));
+
+        // Add "Load More" and "Load All" nodes if there are more items
+        if (hasMore) {
+          children.push({
+            id: `${node.id}-load-more`,
+            name: `Load More (${node.children.length - limit} remaining)`,
+            type: "workload",
+            isLoadMore: true,
+            poolId: node.id,
+            totalCount: node.children.length,
+          });
+          children.push({
+            id: `${node.id}-load-all`,
+            name: `Load All (${node.children.length} total)`,
+            type: "workload",
+            isLoadMore: true,
+            isLoadAll: true,
+            poolId: node.id,
+            totalCount: node.children.length,
+          });
+        }
+      } else {
+        children = convertToTreeData(node.children, workloadLimits);
+      }
+    }
+
+    return {
+      id: node.id,
+      name: node.label,
+      type: node.type,
+      status: node.status,
+      children,
+    };
+  });
 }
 
 const CombinedView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [workloadDisplayLimit, setWorkloadDisplayLimit] = useState<Record<string, number>>({});
 
-  // Convert infrastructure data to tree format
-  const treeData = convertToTreeData(infrastructure1.nodes);
+  // Convert infrastructure data to tree format with limits
+  const treeData = useMemo(
+    () => convertToTreeData(infrastructure1.nodes, workloadDisplayLimit),
+    [workloadDisplayLimit]
+  );
 
   // Find selected node details
   const findNode = (
@@ -162,6 +219,7 @@ const CombinedView = () => {
   const Node = ({ node, style, dragHandle }: NodeRendererProps<TreeData>) => {
     const typeColors = getTypeColor(node.data.type);
     const isSelected = node.id === selectedId;
+    const isLoadMore = node.data.isLoadMore;
 
     return (
       <div
@@ -170,14 +228,30 @@ const CombinedView = () => {
           alignItems: "center",
           padding: "0.375rem 0.5rem",
           cursor: "pointer",
-          background: isSelected ? "#e0f2fe" : "transparent",
+          background: isLoadMore ? "#f0f9ff" : isSelected ? "#e0f2fe" : "transparent",
           borderRadius: "4px",
           transition: "background 0.15s ease",
           ...style,
         }}
         ref={dragHandle}
         onClick={() => {
-          setSelectedId(node.id);
+          if (isLoadMore && node.data.poolId) {
+            if (node.data.isLoadAll) {
+              // Load all workloads
+              setWorkloadDisplayLimit((prev) => ({
+                ...prev,
+                [node.data.poolId!]: node.data.totalCount || Infinity,
+              }));
+            } else {
+              // Load 20 more workloads
+              setWorkloadDisplayLimit((prev) => ({
+                ...prev,
+                [node.data.poolId!]: (prev[node.data.poolId!] || 10) + 20,
+              }));
+            }
+          } else {
+            setSelectedId(node.id);
+          }
         }}
         onMouseEnter={(e) => {
           if (!isSelected) {
@@ -218,7 +292,7 @@ const CombinedView = () => {
         )}
 
         {/* Status indicator for workloads */}
-        {node.data.type === "workload" && node.data.status && (
+        {node.data.type === "workload" && node.data.status && !node.data.isLoadMore && (
           <span
             style={{
               width: "8px",
@@ -231,12 +305,38 @@ const CombinedView = () => {
           />
         )}
 
+        {/* Load More/Load All icon */}
+        {node.data.isLoadMore && (
+          <span
+            style={{
+              width: "16px",
+              height: "16px",
+              background: node.data.isLoadAll ? "#7c3aed" : "#2979FF",
+              borderRadius: "2px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: "0.5rem",
+              color: "white",
+              fontSize: "12px",
+              fontWeight: "bold",
+              flexShrink: 0,
+            }}
+          >
+            {node.data.isLoadAll ? "↓" : "+"}
+          </span>
+        )}
+
         {/* Node label */}
         <span
           style={{
             fontSize: "0.875rem",
-            color: "#111827",
-            fontWeight: isSelected ? 600 : 400,
+            color: node.data.isLoadMore
+              ? node.data.isLoadAll
+                ? "#7c3aed"
+                : "#2979FF"
+              : "#111827",
+            fontWeight: node.data.isLoadMore ? 600 : isSelected ? 600 : 400,
             marginRight: "0.5rem",
             flex: 1,
           }}
@@ -245,19 +345,21 @@ const CombinedView = () => {
         </span>
 
         {/* Type badge */}
-        <span
-          style={{
-            padding: "0.125rem 0.375rem",
-            background: typeColors.bg,
-            color: typeColors.color,
-            borderRadius: "3px",
-            fontSize: "0.7rem",
-            fontWeight: 500,
-            flexShrink: 0,
-          }}
-        >
-          {node.data.type}
-        </span>
+        {!node.data.isLoadMore && (
+          <span
+            style={{
+              padding: "0.125rem 0.375rem",
+              background: typeColors.bg,
+              color: typeColors.color,
+              borderRadius: "3px",
+              fontSize: "0.7rem",
+              fontWeight: 500,
+              flexShrink: 0,
+            }}
+          >
+            {node.data.type}
+          </span>
+        )}
       </div>
     );
   };
@@ -410,10 +512,109 @@ const CombinedView = () => {
             >
               <strong>Active Environment:</strong> {activeEnvId || "None"}
             </p>
-            {selectedNode.children && (
-              <p style={{ color: "#6b7280", fontSize: "0.85rem" }}>
-                <strong>Children:</strong> {selectedNode.children.length}
-              </p>
+
+            {/* Show workload statistics for server pools */}
+            {selectedNode.type === "serverPool" && selectedNode.children && selectedNode.children.length > 0 && (
+              <div style={{ marginTop: "1rem" }}>
+                <p style={{ color: "#111827", fontSize: "0.9rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+                  Workload Status
+                </p>
+                {(() => {
+                  const healthyCount = selectedNode.children.filter(c => c.status === "healthy").length;
+                  const warningCount = selectedNode.children.filter(c => c.status === "warning").length;
+                  const errorCount = selectedNode.children.filter(c => c.status === "error").length;
+                  
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <div
+                        style={{
+                          padding: "0.5rem",
+                          background: "#fff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "4px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            background: getStatusColor("healthy"),
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span style={{ color: "#111827", fontSize: "0.85rem" }}>
+                          Healthy: <strong>{healthyCount}</strong>
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          padding: "0.5rem",
+                          background: "#fff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "4px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            background: getStatusColor("warning"),
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span style={{ color: "#111827", fontSize: "0.85rem" }}>
+                          Warning: <strong>{warningCount}</strong>
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          padding: "0.5rem",
+                          background: "#fff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "4px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            background: getStatusColor("error"),
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span style={{ color: "#111827", fontSize: "0.85rem" }}>
+                          Error: <strong>{errorCount}</strong>
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          padding: "0.5rem",
+                          background: "#f9fafb",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "4px",
+                          marginTop: "0.5rem",
+                        }}
+                      >
+                        <span style={{ color: "#6b7280", fontSize: "0.85rem" }}>
+                          Total: <strong>{selectedNode.children.length}</strong>
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
             )}
           </div>
         ) : (
