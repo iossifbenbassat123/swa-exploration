@@ -4,6 +4,9 @@ import type { InfrastructureNode } from "./infrastructureData";
 import { INFRASTRUCTURE } from "./constants";
 import TopologyUsEast from "./TopologyUsEast";
 import TopologyEuWest from "./TopologyEuWest";
+import { SearchInput } from "./shared/SearchInput";
+import { DetailsPanel } from "./shared/DetailsPanel";
+import { getTypeColor, getStatusColor, findNode, findTopLevelEnv } from "./shared/TreeUtils";
 
 import "@xyflow/react/dist/style.css";
 
@@ -116,82 +119,19 @@ const CombinedView = () => {
   );
 
   // Find selected node details
-  const findNode = (
-    nodes: InfrastructureNode[],
-    id: string
-  ): InfrastructureNode | null => {
-    for (const node of nodes) {
-      if (node.id === id) return node;
-      if (node.children) {
-        const found = findNode(node.children, id);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
   const selectedNode = selectedId
     ? findNode(INFRASTRUCTURE.nodes, selectedId)
     : null;
 
   // Determine which topology to show based on selected environment
   const activeTopology = useMemo(() => {
-    // Find the top-level environment node
-    const findTopLevelEnv = (key: string | null): string | null => {
-      if (!key) return null;
-
-      // Check if the key itself is a top-level environment
-      const isTopLevel = INFRASTRUCTURE.nodes.some((node) => node.id === key);
-      if (isTopLevel) return key;
-
-      // Find which top-level environment contains this key
-      for (const env of INFRASTRUCTURE.nodes) {
-        const checkNode = (nodes: typeof INFRASTRUCTURE.nodes): boolean => {
-          for (const node of nodes) {
-            if (node.id === key) return true;
-            if (node.children && checkNode(node.children)) return true;
-          }
-          return false;
-        };
-
-        if (env.children && checkNode(env.children)) {
-          return env.id;
-        }
-      }
-
-      return null;
-    };
-
-    const envId = findTopLevelEnv(selectedId);
+    const envId = findTopLevelEnv(INFRASTRUCTURE.nodes, selectedId);
     return envId && topologyMap[envId] ? topologyMap[envId] : TopologyUsEast;
   }, [selectedId]);
 
   // Determine active environment ID for key
   const activeEnvId = useMemo(() => {
-    if (!selectedId) return null;
-
-    // Check if the key itself is a top-level environment
-    const isTopLevel = INFRASTRUCTURE.nodes.some(
-      (node: InfrastructureNode) => node.id === selectedId
-    );
-    if (isTopLevel) return selectedId;
-
-    // Find which top-level environment contains this key
-    for (const env of INFRASTRUCTURE.nodes) {
-      const checkNode = (nodes: typeof INFRASTRUCTURE.nodes): boolean => {
-        for (const node of nodes) {
-          if (node.id === selectedId) return true;
-          if (node.children && checkNode(node.children)) return true;
-        }
-        return false;
-      };
-
-      if (env.children && checkNode(env.children)) {
-        return env.id;
-      }
-    }
-
-    return null;
+    return findTopLevelEnv(INFRASTRUCTURE.nodes, selectedId);
   }, [selectedId]);
 
   const handleNodeClick = (nodeId: string) => {
@@ -200,34 +140,6 @@ const CombinedView = () => {
 
   // Get the component to render
   const TopologyComponent = activeTopology;
-
-  // Get type color for badges
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "environment":
-        return { bg: "#dbeafe", color: "#1e40af" };
-      case "serverPool":
-        return { bg: "#fef3c7", color: "#92400e" };
-      case "workload":
-        return { bg: "#ddd6fe", color: "#5b21b6" };
-      default:
-        return { bg: "#f3f4f6", color: "#374151" };
-    }
-  };
-
-  // Get status color
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case "healthy":
-        return "#22c55e"; // green
-      case "warning":
-        return "#f59e0b"; // orange
-      case "error":
-        return "#ef4444"; // red
-      default:
-        return "#9ca3af"; // gray
-    }
-  };
 
   // Custom node renderer
   const Node = ({ node, style, dragHandle }: NodeRendererProps<TreeData>) => {
@@ -447,19 +359,10 @@ const CombinedView = () => {
           </h3>
 
           {/* Search input */}
-          <input
-            type="text"
-            placeholder="Search nodes..."
+          <SearchInput
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              borderRadius: "4px",
-              border: "1px solid #d1d5db",
-              fontSize: "0.9rem",
-              outline: "none",
-            }}
+            onChange={setSearchTerm}
+            placeholder="Search nodes..."
           />
         </div>
 
@@ -492,230 +395,11 @@ const CombinedView = () => {
       </div>
 
       {/* Right Panel - Details */}
-      <div
-        style={{
-          width: "300px",
-          minWidth: "300px",
-          background: "#f9fafb",
-          borderLeft: "1px solid #e5e7eb",
-          padding: "1rem",
-          overflowY: "auto",
-        }}
-      >
-        <h3 style={{ margin: "0 0 1rem 0", fontSize: "1.1rem" }}>Details</h3>
-
-        {selectedId && selectedNode ? (
-          <div>
-            <div
-              style={{
-                padding: "0.75rem",
-                background: "#fff",
-                borderRadius: "4px",
-                marginBottom: "1rem",
-                border: "1px solid #e5e7eb",
-              }}
-            >
-              <p
-                style={{
-                  color: "#111827",
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {selectedNode.label}
-              </p>
-              <p
-                style={{
-                  color: "#6b7280",
-                  fontSize: "0.85rem",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                <strong>ID:</strong> {selectedNode.id}
-              </p>
-              <p
-                style={{
-                  color: "#6b7280",
-                  fontSize: "0.85rem",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                <strong>Type:</strong>{" "}
-                <span
-                  style={{
-                    padding: "0.125rem 0.5rem",
-                    background:
-                      selectedNode.type === "environment"
-                        ? "#dbeafe"
-                        : selectedNode.type === "serverPool"
-                        ? "#fef3c7"
-                        : "#ddd6fe",
-                    color:
-                      selectedNode.type === "environment"
-                        ? "#1e40af"
-                        : selectedNode.type === "serverPool"
-                        ? "#92400e"
-                        : "#5b21b6",
-                    borderRadius: "4px",
-                    fontSize: "0.8rem",
-                    fontWeight: 500,
-                  }}
-                >
-                  {selectedNode.type}
-                </span>
-              </p>
-            </div>
-            <p
-              style={{
-                color: "#6b7280",
-                fontSize: "0.85rem",
-                marginBottom: "0.5rem",
-              }}
-            >
-              <strong>Active Environment:</strong> {activeEnvId || "None"}
-            </p>
-
-            {/* Show workload statistics for server pools */}
-            {selectedNode.type === "serverPool" &&
-              selectedNode.children &&
-              selectedNode.children.length > 0 && (
-                <div style={{ marginTop: "1rem" }}>
-                  <p
-                    style={{
-                      color: "#111827",
-                      fontSize: "0.9rem",
-                      fontWeight: 600,
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    Workload Status
-                  </p>
-                  {(() => {
-                    const healthyCount = selectedNode.children.filter(
-                      (c) => c.status === "healthy"
-                    ).length;
-                    const warningCount = selectedNode.children.filter(
-                      (c) => c.status === "warning"
-                    ).length;
-                    const errorCount = selectedNode.children.filter(
-                      (c) => c.status === "error"
-                    ).length;
-
-                    return (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "0.5rem",
-                        }}
-                      >
-                        <div
-                          style={{
-                            padding: "0.5rem",
-                            background: "#fff",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "4px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: "8px",
-                              height: "8px",
-                              borderRadius: "50%",
-                              background: getStatusColor("healthy"),
-                              flexShrink: 0,
-                            }}
-                          />
-                          <span
-                            style={{ color: "#111827", fontSize: "0.85rem" }}
-                          >
-                            Healthy: <strong>{healthyCount}</strong>
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            padding: "0.5rem",
-                            background: "#fff",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "4px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: "8px",
-                              height: "8px",
-                              borderRadius: "50%",
-                              background: getStatusColor("warning"),
-                              flexShrink: 0,
-                            }}
-                          />
-                          <span
-                            style={{ color: "#111827", fontSize: "0.85rem" }}
-                          >
-                            Warning: <strong>{warningCount}</strong>
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            padding: "0.5rem",
-                            background: "#fff",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "4px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: "8px",
-                              height: "8px",
-                              borderRadius: "50%",
-                              background: getStatusColor("error"),
-                              flexShrink: 0,
-                            }}
-                          />
-                          <span
-                            style={{ color: "#111827", fontSize: "0.85rem" }}
-                          >
-                            Error: <strong>{errorCount}</strong>
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            padding: "0.5rem",
-                            background: "#f9fafb",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "4px",
-                            marginTop: "0.5rem",
-                          }}
-                        >
-                          <span
-                            style={{ color: "#6b7280", fontSize: "0.85rem" }}
-                          >
-                            Total:{" "}
-                            <strong>{selectedNode.children.length}</strong>
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-          </div>
-        ) : (
-          <p style={{ color: "#999", fontSize: "0.9rem" }}>
-            Select an item from the tree or topology to view details
-          </p>
-        )}
-      </div>
+      <DetailsPanel
+        selectedId={selectedId}
+        selectedNode={selectedNode}
+        activeEnvId={activeEnvId}
+      />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import Topology1 from "./Iossif";
 import CircleScheme1 from "./KirilCircle/CircleScheme1";
 import TreeExample from "./TreeExample";
 import CombinedView from "./CombinedView";
+import CombinedViewPrimeReact from "./CombinedViewPrimeReact";
 
 function App() {
   return (
@@ -56,7 +57,13 @@ function App() {
             to="/combined"
             style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
           >
-            Combined
+            Combined (Arborist)
+          </Link>
+          <Link
+            to="/combined-primereact"
+            style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
+          >
+            Combined (PrimeReact)
           </Link>
         </nav>
         <div style={{ flex: 1, overflow: "auto", height: "100vh" }}>
@@ -73,6 +80,7 @@ function App() {
             <Route path="/circle-scheme-1" element={<CircleScheme1 />} />
             <Route path="/tree-example" element={<TreeExample />} />
             <Route path="/combined" element={<CombinedView />} />
+            <Route path="/combined-primereact" element={<CombinedViewPrimeReact />} />
           </Routes>
         </div>
       </div>
