@@ -64,7 +64,6 @@ function flattenTree(
         if (node.type === "serverPool" && node.children.length > 10) {
           const limit = workloadLimits[node.id] || 10;
           const displayedChildren = node.children.slice(0, limit);
-          const hasMore = limit < node.children.length;
 
           childrenToProcess = displayedChildren;
           hasChildren = true;
