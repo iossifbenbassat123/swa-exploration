@@ -12,11 +12,11 @@ import {
   type Node,
   type OnConnectEnd,
 } from "@xyflow/react";
-import { initialNodes, initialEdges } from "./initialData";
-import CustomConnectionLine from "./CustomConnectionLine";
-import ServerPoolNode from "./nodes/ServerPoolNode";
-import ServerNode from "./nodes/ServerNode";
-import RootNode from "./nodes/RootNode";
+import { initialNodes, initialEdges } from "../../initialData";
+import CustomConnectionLine from "../../topologies/ReactFlow/CustomConnectionLine";
+import ServerPoolNode from "../../nodes/ServerPoolNode";
+import ServerNode from "../../nodes/ServerNode";
+import RootNode from "../../nodes/RootNode";
 
 import "@xyflow/react/dist/style.css";
 

@@ -1,10 +1,11 @@
 import { HashRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
-import Topology1 from "./Iossif";
+import Topology1 from "./views/Topology1/Topology1";
 import CircleScheme1 from "./KirilCircle/CircleScheme1";
-import TreeExample from "./TreeExample";
-import CombinedView from "./CombinedView";
-import CombinedViewPrimeReact from "./CombinedViewPrimeReact";
+import PrimeReactTreeView from "./views/PrimeReactTreeView/PrimeReactTreeView";
+import CombinedView from "./views/CombinedView/CombinedView";
+import CombinedViewPrimeReact from "./views/CombinedViewPrimeReact/CombinedViewPrimeReact";
+import CombinedViewVisx from "./views/CombinedViewVisx/CombinedViewVisx";
 
 function App() {
   return (
@@ -65,6 +66,12 @@ function App() {
           >
             Combined (PrimeReact)
           </Link>
+          <Link
+            to="/combined-visx"
+            style={{ color: "#fff", textDecoration: "none", fontWeight: 500 }}
+          >
+            Combined (Visx)
+          </Link>
         </nav>
         <div style={{ flex: 1, overflow: "auto", height: "100vh" }}>
           <Routes>
@@ -78,9 +85,10 @@ function App() {
             />
             <Route path="/topology-1" element={<Topology1 />} />
             <Route path="/circle-scheme-1" element={<CircleScheme1 />} />
-            <Route path="/tree-example" element={<TreeExample />} />
+            <Route path="/tree-example" element={<PrimeReactTreeView />} />
             <Route path="/combined" element={<CombinedView />} />
             <Route path="/combined-primereact" element={<CombinedViewPrimeReact />} />
+            <Route path="/combined-visx" element={<CombinedViewVisx />} />
           </Routes>
         </div>
       </div>

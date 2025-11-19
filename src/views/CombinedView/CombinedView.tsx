@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
 import { Tree, type NodeRendererProps } from "react-arborist";
-import type { InfrastructureNode } from "./infrastructureData";
-import { INFRASTRUCTURE } from "./constants";
-import TopologyUsEast from "./TopologyUsEast";
-import TopologyEuWest from "./TopologyEuWest";
-import { SearchInput } from "./shared/SearchInput";
-import { DetailsPanel } from "./shared/DetailsPanel";
-import { getTypeColor, getStatusColor, findNode, findTopLevelEnv } from "./shared/TreeUtils";
+import type { InfrastructureNode } from "../../infrastructureData";
+import { INFRASTRUCTURE } from "../../constants";
+import TopologyUsEast from "../../topologies/ReactFlow/TopologyUsEast";
+import TopologyEuWest from "../../topologies/ReactFlow/TopologyEuWest";
+import { SearchInput } from "../../shared/SearchInput";
+import { DetailsPanel } from "../../shared/DetailsPanel";
+import { getTypeColor, getStatusColor, findNode, findTopLevelEnv } from "../../shared/TreeUtils";
 
 import "@xyflow/react/dist/style.css";
 

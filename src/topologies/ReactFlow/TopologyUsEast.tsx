@@ -12,12 +12,12 @@ import {
   type Node,
   type OnConnectEnd,
 } from "@xyflow/react";
-import { INFRASTRUCTURE } from "./constants";
-import type { InfrastructureNode } from "./infrastructureData";
+import { INFRASTRUCTURE } from "../../constants";
+import type { InfrastructureNode } from "../../infrastructureData";
 import CustomConnectionLine from "./CustomConnectionLine";
-import ServerPoolNode from "./nodes/ServerPoolNode";
-import ServerNode from "./nodes/ServerNode";
-import RootNode from "./nodes/RootNode";
+import ServerPoolNode from "../../nodes/ServerPoolNode";
+import ServerNode from "../../nodes/ServerNode";
+import RootNode from "../../nodes/RootNode";
 
 import "@xyflow/react/dist/style.css";
 
@@ -27,40 +27,40 @@ const nodeTypes = {
   server: ServerNode,
 };
 
-let id = 200;
-const getId = () => `eu-west-${id++}`;
+let id = 100;
+const getId = () => `us-east-${id++}`;
 const nodeOrigin: [number, number] = [0.5, 0];
 
-interface TopologyEuWestProps {
+interface TopologyUsEastProps {
   selectedId?: string | null;
   onNodeClick?: (nodeId: string) => void;
 }
 
-const TopologyEuWest = ({ selectedId, onNodeClick }: TopologyEuWestProps) => {
+const TopologyUsEast = ({ selectedId, onNodeClick }: TopologyUsEastProps) => {
   const reactFlowWrapper = useRef(null);
 
   // Generate nodes and edges from infrastructure data
   const { initialNodes, initialEdges } = useMemo(() => {
-    const euWestEnv = INFRASTRUCTURE.nodes.find(
-      (node: InfrastructureNode) => node.id === "eu-west"
+    const usEastEnv = INFRASTRUCTURE.nodes.find(
+      (node: InfrastructureNode) => node.id === "us-east"
     );
-    if (!euWestEnv) return { initialNodes: [], initialEdges: [] };
+    if (!usEastEnv) return { initialNodes: [], initialEdges: [] };
 
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
     // Root node
     nodes.push({
-      id: "eu-west-root",
+      id: "us-east-root",
       type: "root",
-      data: { label: euWestEnv.label },
+      data: { label: usEastEnv.label },
       position: { x: 400, y: 50 },
     });
 
     // Server pools
-    const pools = euWestEnv.children || [];
+    const pools = usEastEnv.children || [];
     pools.forEach((pool: InfrastructureNode, poolIndex: number) => {
-      const poolX = 250 + poolIndex * 300;
+      const poolX = 100 + poolIndex * 300;
       nodes.push({
         id: pool.id,
         type: "serverPool",
@@ -69,8 +69,8 @@ const TopologyEuWest = ({ selectedId, onNodeClick }: TopologyEuWestProps) => {
       });
 
       edges.push({
-        id: `eu-west-root-${pool.id}`,
-        source: "eu-west-root",
+        id: `us-east-root-${pool.id}`,
+        source: "us-east-root",
         target: pool.id,
       });
 
@@ -103,7 +103,7 @@ const TopologyEuWest = ({ selectedId, onNodeClick }: TopologyEuWestProps) => {
               count: count > 1 ? count : undefined,
               workloads: group,
             },
-            position: { x: poolX - 50 + groupIndex * 100, y: 350 },
+            position: { x: poolX - 100 + groupIndex * 100, y: 350 },
           });
 
           edges.push({
@@ -126,12 +126,12 @@ const TopologyEuWest = ({ selectedId, onNodeClick }: TopologyEuWestProps) => {
 
   // ID mapping includes workload-to-group mappings
   const idMapping: Record<string, string> = useMemo(() => {
-    const mapping: Record<string, string> = { "eu-west": "eu-west-root" };
-    const euWestEnv = INFRASTRUCTURE.nodes.find(
-      (n: InfrastructureNode) => n.id === "eu-west"
+    const mapping: Record<string, string> = { "us-east": "us-east-root" };
+    const usEastEnv = INFRASTRUCTURE.nodes.find(
+      (n: InfrastructureNode) => n.id === "us-east"
     );
 
-    euWestEnv?.children?.forEach((pool: InfrastructureNode) => {
+    usEastEnv?.children?.forEach((pool: InfrastructureNode) => {
       mapping[pool.id] = pool.id;
 
       // Group workloads by status
@@ -251,13 +251,13 @@ const TopologyEuWest = ({ selectedId, onNodeClick }: TopologyEuWestProps) => {
   );
 };
 
-const TopologyEuWestWithProvider = ({
+const TopologyUsEastWithProvider = ({
   selectedId,
   onNodeClick,
-}: TopologyEuWestProps) => (
+}: TopologyUsEastProps) => (
   <ReactFlowProvider>
-    <TopologyEuWest selectedId={selectedId} onNodeClick={onNodeClick} />
+    <TopologyUsEast selectedId={selectedId} onNodeClick={onNodeClick} />
   </ReactFlowProvider>
 );
 
-export default TopologyEuWestWithProvider;
+export default TopologyUsEastWithProvider;

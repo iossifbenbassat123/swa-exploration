@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Tree } from "primereact/tree";
 import type { TreeNode } from "primereact/treenode";
 
-export default function TreeExample() {
+export default function PrimeReactTreeView() {
   const generateServerPools = (envKey: string, envPrefix: string) => {
     const workloadNames = [
       "aws-win-nginx",

@@ -1,14 +1,13 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { VirtualScroller } from "primereact/virtualscroller";
-import type { InfrastructureNode } from "./infrastructureData";
-import { INFRASTRUCTURE } from "./constants";
-import TopologyUsEast from "./TopologyUsEast";
-import TopologyEuWest from "./TopologyEuWest";
-import { SearchInput } from "./shared/SearchInput";
-import { DetailsPanel } from "./shared/DetailsPanel";
-import { getTypeColor, getStatusColor, findNode, findTopLevelEnv } from "./shared/TreeUtils";
+import type { InfrastructureNode } from "../../infrastructureData";
+import { INFRASTRUCTURE } from "../../constants";
+import TopologyUsEastVisx from "./TopologyUsEastVisx";
+import TopologyEuWestVisx from "./TopologyEuWestVisx";
+import { SearchInput } from "../../shared/SearchInput";
+import { DetailsPanel } from "../../shared/DetailsPanel";
+import { getTypeColor, getStatusColor, findNode, findTopLevelEnv } from "../../shared/TreeUtils";
 
-import "@xyflow/react/dist/style.css";
 import "primereact/resources/themes/lara-light-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 
@@ -20,8 +19,8 @@ const topologyMap: Record<
     onNodeClick?: (nodeId: string) => void;
   }>
 > = {
-  "us-east": TopologyUsEast,
-  "eu-west": TopologyEuWest,
+  "us-east": TopologyUsEastVisx,
+  "eu-west": TopologyEuWestVisx,
 };
 
 // Flattened tree item interface
@@ -157,7 +156,7 @@ function flattenTree(
 
 const ROW_HEIGHT = 36;
 
-const CombinedViewPrimeReact = () => {
+const CombinedViewVisx = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [workloadDisplayLimit, setWorkloadDisplayLimit] = useState<
@@ -209,7 +208,7 @@ const CombinedViewPrimeReact = () => {
   // Determine which topology to show based on selected environment
   const activeTopology = useMemo(() => {
     const envId = findTopLevelEnv(INFRASTRUCTURE.nodes, selectedId);
-    return envId && topologyMap[envId] ? topologyMap[envId] : TopologyUsEast;
+    return envId && topologyMap[envId] ? topologyMap[envId] : TopologyUsEastVisx;
   }, [selectedId]);
 
   // Determine active environment ID for key
@@ -446,7 +445,7 @@ const CombinedViewPrimeReact = () => {
         </div>
       </div>
 
-      {/* Center Panel - Topology */}
+      {/* Center Panel - Topology (Visx) */}
       <div style={{ flex: 1, height: "100%" }}>
         <TopologyComponent
           key={activeEnvId}
@@ -465,4 +464,5 @@ const CombinedViewPrimeReact = () => {
   );
 };
 
-export default CombinedViewPrimeReact;
+export default CombinedViewVisx;
+
