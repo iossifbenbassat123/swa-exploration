@@ -15,6 +15,7 @@ import '@xyflow/react/dist/style.css';
 import CircleNode from './CirlceNode';
 import type { CircleNodeData } from './CirlceNode';
 import CustomParallelEdge from './CustomParallelEdge';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Define custom node types
 const nodeTypes = {
@@ -187,6 +188,7 @@ const initialEdges: Edge[] = [
 ];
 
 export default function NetworkDiagram() {
+  const { colorMode } = useTheme();
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -219,6 +221,7 @@ export default function NetworkDiagram() {
         edgeTypes={edgeTypes}
         fitView
         attributionPosition="bottom-left"
+        colorMode={colorMode}
       >
         <Controls />
         <MiniMap />

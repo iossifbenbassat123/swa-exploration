@@ -18,6 +18,7 @@ import CustomConnectionLine from "./CustomConnectionLine";
 import ServerPoolNode from "../../nodes/ServerPoolNode";
 import ServerNode from "../../nodes/ServerNode";
 import RootNode from "../../nodes/RootNode";
+import { useTheme } from "../../contexts/ThemeContext";
 
 import "@xyflow/react/dist/style.css";
 
@@ -38,6 +39,7 @@ interface TopologyEuWestProps {
 
 const TopologyEuWest = ({ selectedId, onNodeClick }: TopologyEuWestProps) => {
   const reactFlowWrapper = useRef(null);
+  const { colorMode } = useTheme();
 
   // Generate nodes and edges from infrastructure data
   const { initialNodes, initialEdges } = useMemo(() => {
@@ -244,6 +246,7 @@ const TopologyEuWest = ({ selectedId, onNodeClick }: TopologyEuWestProps) => {
         fitViewOptions={{ padding: 0.5, maxZoom: 1.2, minZoom: 0.5 }}
         defaultViewport={{ x: 0, y: 0, zoom: 1.2 }}
         nodeOrigin={nodeOrigin}
+        colorMode={colorMode}
       >
         <Background />
       </ReactFlow>
