@@ -7,6 +7,7 @@ import PrimeReactTreeView from './views/PrimeReactTreeView/PrimeReactTreeView';
 import CombinedView from './views/CombinedView/CombinedView';
 import CombinedViewPrimeReact from './views/CombinedViewPrimeReact/CombinedViewPrimeReact';
 import CombinedViewVisx from './views/CombinedViewVisx/CombinedViewVisx';
+import CombinedViewPrimeReactSticky from './views/CominedSticky/CombinedViewPrimeReactSticky';
 
 function App() {
   return (
@@ -68,6 +69,12 @@ function App() {
             Combined (PrimeReact)
           </Link>
           <Link
+            to="/combined-primereact-sticky"
+            style={{ color: '#fff', textDecoration: 'none', fontWeight: 500 }}
+          >
+            Combined (PrimeReact Sticky)
+          </Link>
+          <Link
             to="/combined-visx"
             style={{ color: '#fff', textDecoration: 'none', fontWeight: 500 }}
           >
@@ -86,6 +93,7 @@ function App() {
             <Route path="/tree-example" element={<PrimeReactTreeView />} />
             <Route path="/combined" element={<CombinedView />} />
             <Route path="/combined-primereact" element={<CombinedViewPrimeReact />} />
+            <Route path="/combined-primereact-sticky" element={<CombinedViewPrimeReactSticky />} />
             <Route path="/combined-visx" element={<CombinedViewVisx />} />
           </Routes>
         </div>

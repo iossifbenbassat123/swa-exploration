@@ -1,5 +1,7 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
+import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
+import { useNavigate } from 'react-router-dom';
 
 export interface CircleNodeData extends Record<string, unknown> {
   label: string;
@@ -11,6 +13,7 @@ export interface CircleNodeData extends Record<string, unknown> {
   size?: number;
   strokeWidth?: number;
   showTooltip?: boolean;
+  link?: string;
 }
 
 interface CircleNodeProps extends NodeProps {
@@ -18,7 +21,27 @@ interface CircleNodeProps extends NodeProps {
 }
 
 function CircleNode({ data, selected }: CircleNodeProps) {
-  const { label, segments, size = 100, strokeWidth = 20 } = data;
+  const {
+    label,
+    segments,
+    size = 100,
+    strokeWidth = 20,
+    showTooltip: showTooltipProp,
+    link,
+  } = data;
+  const [showTooltip, setShowTooltip] = useState(false);
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (link) {
+      // Check if it's an external URL or internal route
+      if (link.startsWith('http://') || link.startsWith('https://')) {
+        window.open(link, '_blank', 'noopener,noreferrer');
+      } else {
+        navigate(link);
+      }
+    }
+  };
 
   // Calculate total value
   const total = segments.reduce((sum, seg) => sum + seg.value, 0);
@@ -74,7 +97,9 @@ function CircleNode({ data, selected }: CircleNodeProps) {
         flexDirection: 'column',
         alignItems: 'center',
         gap: '8px',
+        cursor: link ? 'pointer' : 'default',
       }}
+      onClick={link ? handleClick : undefined}
     >
       {/* Label above the circle */}
       <div
@@ -90,9 +115,12 @@ function CircleNode({ data, selected }: CircleNodeProps) {
       >
         {label}
       </div>
-
       {/* Circle with segments */}
-      <div style={{ position: 'relative' }}>
+      <div
+        style={{ position: 'relative' }}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
         <svg
           width={size}
           height={size}
@@ -105,22 +133,85 @@ function CircleNode({ data, selected }: CircleNodeProps) {
           {generateSegments()}
         </svg>
 
-        {/* Center dot (optional) */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            backgroundColor: '#666',
-          }}
-        />
+        {/* Tooltip */}
+        {(showTooltip || showTooltipProp) && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: `${size + 10}px`,
+              transform: 'translateY(-50%)',
+              background: 'white',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+              zIndex: 1000,
+              minWidth: '200px',
+            }}
+          >
+            {segments.map((segment, index) => (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: index < segments.length - 1 ? '8px' : '0',
+                }}
+              >
+                <span
+                  style={{
+                    color: segment.color,
+                    marginRight: '8px',
+                    fontSize: '14px',
+                  }}
+                >
+                  {segment.label ? '✓' : '●'}
+                </span>
+                <span>
+                  {segment.value} {segment.label || `Segment ${index + 1}`}
+                </span>
+              </div>
+            ))}
+            {total > 0 && (
+              <div
+                style={{
+                  marginTop: '8px',
+                  paddingTop: '8px',
+                  borderTop: '1px solid #e5e7eb',
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontWeight: 600,
+                }}
+              >
+                <span style={{ marginRight: '8px' }}>Total:</span>
+                <span>{total}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* Connection handles removed - React Flow will calculate from node boundaries */}
+      {/* Invisible handles at node boundaries - React Flow will use these automatically */}
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={{ opacity: 0, width: 1, height: 1, pointerEvents: 'none' }}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{ opacity: 0, width: 1, height: 1, pointerEvents: 'none' }}
+      />
+      <Handle
+        type="source"
+        position={Position.Top}
+        style={{ opacity: 0, width: 1, height: 1, pointerEvents: 'none' }}
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        style={{ opacity: 0, width: 1, height: 1, pointerEvents: 'none' }}
+      />
     </div>
   );
 }

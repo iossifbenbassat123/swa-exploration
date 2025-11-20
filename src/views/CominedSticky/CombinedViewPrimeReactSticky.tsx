@@ -157,7 +157,7 @@ function flattenTree(
 
 const ROW_HEIGHT = 36;
 
-const CombinedViewPrimeReact = () => {
+const CombinedViewPrimeReactSticky = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [workloadDisplayLimit, setWorkloadDisplayLimit] = useState<Record<string, number>>({});
@@ -454,4 +454,4 @@ const CombinedViewPrimeReact = () => {
   );
 };
 
-export default CombinedViewPrimeReact;
+export default CombinedViewPrimeReactSticky;

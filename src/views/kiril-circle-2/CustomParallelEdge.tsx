@@ -26,6 +26,11 @@ export default function CustomParallelEdge({
   const dy = refEndY - refStartY;
   const length = Math.sqrt(dx * dx + dy * dy);
 
+  // Handle edge case where nodes are at the same position
+  if (length === 0) {
+    return null;
+  }
+
   // Perpendicular vector (pointing "up" relative to normalized direction)
   const perpX = -dy / length;
   const perpY = dx / length;
@@ -35,7 +40,7 @@ export default function CustomParallelEdge({
   const midY = (refStartY + refEndY) / 2;
 
   // Control point (same arc for all edges between these nodes)
-  const curvature = -0.25;
+  const curvature = 0.15;
   const controlOffset = length * curvature;
   const baseControlX = midX + perpX * controlOffset;
   const baseControlY = midY + perpY * controlOffset;

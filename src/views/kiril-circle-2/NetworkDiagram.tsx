@@ -32,6 +32,8 @@ const initialNodes: Node<CircleNodeData>[] = [
     id: '1',
     type: 'circle',
     position: { x: 100, y: 200 },
+    width: 120,
+    height: 120,
     data: {
       label: 'dev.example.com',
       segments: [
@@ -41,12 +43,15 @@ const initialNodes: Node<CircleNodeData>[] = [
       ],
       size: 120,
       strokeWidth: 25,
+      link: '/combined-primereact', // Example: redirect to topology-1 page
     },
   },
   {
     id: '2',
     type: 'circle',
     position: { x: 500, y: 100 },
+    width: 120,
+    height: 120,
     data: {
       label: 'staging.example.com',
       segments: [
@@ -55,12 +60,15 @@ const initialNodes: Node<CircleNodeData>[] = [
       ],
       size: 120,
       strokeWidth: 25,
+      link: '/combined-primereact', // Example: redirect to circle-scheme-1 page
     },
   },
   {
     id: '3',
     type: 'circle',
     position: { x: 500, y: 350 },
+    width: 120,
+    height: 120,
     data: {
       label: 'prod.example.com',
       segments: [
@@ -69,12 +77,15 @@ const initialNodes: Node<CircleNodeData>[] = [
       ],
       size: 120,
       strokeWidth: 25,
+      link: '/combined-primereact', // Example: redirect to combined page
     },
   },
   {
     id: '4',
     type: 'circle',
     position: { x: 850, y: 250 },
+    width: 120,
+    height: 120,
     data: {
       label: 'test.example.com',
       segments: [
@@ -83,12 +94,15 @@ const initialNodes: Node<CircleNodeData>[] = [
       ],
       size: 120,
       strokeWidth: 25,
+      link: '/combined-primereact', // Example: external link opens in new tab
     },
   },
   {
     id: '5',
     type: 'circle',
     position: { x: 1100, y: 350 },
+    width: 120,
+    height: 120,
     data: {
       label: 'api.example.com',
       segments: [
@@ -98,6 +112,7 @@ const initialNodes: Node<CircleNodeData>[] = [
       ],
       size: 120,
       strokeWidth: 25,
+      link: '/combined-primereact', // Example: redirect to tree-example page
     },
   },
 ];
