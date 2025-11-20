@@ -8,8 +8,38 @@ import CombinedView from './views/CombinedView/CombinedView';
 import CombinedViewPrimeReact from './views/CombinedViewPrimeReact/CombinedViewPrimeReact';
 import CombinedViewVisx from './views/CombinedViewVisx/CombinedViewVisx';
 import CombinedViewPrimeReactSticky from './views/CominedSticky/CombinedViewPrimeReactSticky';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
-function App() {
+function ThemeToggle() {
+  const { colorMode, toggleColorMode } = useTheme();
+
+  return (
+    <button
+      onClick={toggleColorMode}
+      style={{
+        padding: '0.5rem 1rem',
+        marginBottom: '1rem',
+        background: colorMode === 'dark' ? '#4a5568' : '#e2e8f0',
+        color: colorMode === 'dark' ? '#fff' : '#1a202c',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '0.875rem',
+        fontWeight: 500,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        transition: 'all 0.2s',
+      }}
+      title={`Switch to ${colorMode === 'dark' ? 'light' : 'dark'} mode`}
+    >
+      <span>{colorMode === 'dark' ? '☀️' : '🌙'}</span>
+      <span>{colorMode === 'dark' ? 'Light' : 'Dark'} Mode</span>
+    </button>
+  );
+}
+
+function AppContent() {
   return (
     <Router>
       <div
@@ -38,6 +68,7 @@ function App() {
             overflowY: 'auto',
           }}
         >
+          <ThemeToggle />
           <Link to="/topology-1" style={{ color: '#fff', textDecoration: 'none', fontWeight: 500 }}>
             Topology-1
           </Link>
@@ -99,6 +130,14 @@ function App() {
         </div>
       </div>
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

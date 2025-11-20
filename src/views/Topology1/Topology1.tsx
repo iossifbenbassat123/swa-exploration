@@ -17,6 +17,7 @@ import CustomConnectionLine from "../../topologies/ReactFlow/CustomConnectionLin
 import ServerPoolNode from "../../nodes/ServerPoolNode";
 import ServerNode from "../../nodes/ServerNode";
 import RootNode from "../../nodes/RootNode";
+import { useTheme } from "../../contexts/ThemeContext";
 
 import "@xyflow/react/dist/style.css";
 
@@ -32,6 +33,7 @@ const nodeOrigin: [number, number] = [0.5, 0];
 
 const Topology1 = () => {
   const reactFlowWrapper = useRef(null);
+  const { colorMode } = useTheme();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
@@ -89,6 +91,7 @@ const Topology1 = () => {
         fitView
         fitViewOptions={{ padding: 2 }}
         nodeOrigin={nodeOrigin}
+        colorMode={colorMode}
       >
         <Background />
       </ReactFlow>

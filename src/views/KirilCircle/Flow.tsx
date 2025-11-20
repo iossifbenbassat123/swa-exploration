@@ -9,6 +9,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import CustomCircleNode from './CustomCircleNode';
 import CustomParallelEdge from './CustomParallelEdge'; // Import the custom edge
+import { useTheme } from '../../contexts/ThemeContext';
 
 const nodeTypes = {
   circleNode: CustomCircleNode,
@@ -79,6 +80,7 @@ const initialEdges = [
 ];
 
 export default function Flow() {
+  const { colorMode } = useTheme();
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, , onEdgesChange] = useEdgesState(initialEdges);
 
@@ -92,6 +94,7 @@ export default function Flow() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
+        colorMode={colorMode}
       >
         <Background />
         <Controls />
