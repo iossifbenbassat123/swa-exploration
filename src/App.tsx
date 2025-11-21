@@ -9,6 +9,7 @@ import CombinedViewPrimeReact from './views/CombinedViewPrimeReact/CombinedViewP
 import CombinedViewVisx from './views/CombinedViewVisx/CombinedViewVisx';
 import CombinedViewPrimeReactSticky from './views/CominedSticky/CombinedViewPrimeReactSticky';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import CombinedViewD3 from './views/CombinedViewD3/CombinedViewD3';
 
 function ThemeToggle() {
   const { colorMode, toggleColorMode } = useTheme();
@@ -111,6 +112,12 @@ function AppContent() {
           >
             Combined (Visx)
           </Link>
+          <Link
+            to="/combined-d3"
+            style={{ color: '#fff', textDecoration: 'none', fontWeight: 500 }}
+          >
+            Combined (D3)
+          </Link>
         </nav>
         <div style={{ flex: 1, overflow: 'auto', height: '100vh' }}>
           <Routes>
@@ -126,6 +133,7 @@ function AppContent() {
             <Route path="/combined-primereact" element={<CombinedViewPrimeReact />} />
             <Route path="/combined-primereact-sticky" element={<CombinedViewPrimeReactSticky />} />
             <Route path="/combined-visx" element={<CombinedViewVisx />} />
+            <Route path="/combined-d3" element={<CombinedViewD3 />} />
           </Routes>
         </div>
       </div>
