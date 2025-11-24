@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { INFRASTRUCTURE } from '../../constants';
 import TopologyUsEast from '../../topologies/ReactFlow/TopologyUsEast';
 import TopologyEuWest from '../../topologies/ReactFlow/TopologyEuWest';
-import { TreePanel } from '../../shared/TreePanel';
+import { TreePanel } from '../../trees/primereact/TreePanel';
 import { DetailsPanel } from '../../shared/DetailsPanel';
 import { findNode, findTopLevelEnv } from '../../shared/TreeUtils';
 

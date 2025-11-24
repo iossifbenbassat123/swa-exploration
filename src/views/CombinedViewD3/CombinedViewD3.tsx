@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { INFRASTRUCTURE } from '../../constants';
 import TopologyD3 from '../../topologies/D3/TopologyD3';
-import { TreePanel } from '../../shared/TreePanel';
+import { TreePanel } from '../../trees/primereact/TreePanel';
 import { DetailsPanel } from '../../shared/DetailsPanel';
 import { findNode, findTopLevelEnv } from '../../shared/TreeUtils';
 

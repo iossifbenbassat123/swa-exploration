@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { VirtualScroller } from 'primereact/virtualscroller';
-import type { InfrastructureNode } from '../infrastructureData';
-import { INFRASTRUCTURE } from '../constants';
-import { flattenTree } from './TreeUtils';
+import type { InfrastructureNode } from '../../infrastructureData';
+import { INFRASTRUCTURE } from '../../constants';
+import { flattenTree } from '../../shared/TreeUtils';
 import { TreeItemTemplate, ROW_HEIGHT, type FlattenedItem } from './TreeItemTemplate';
-import { SearchInput } from './SearchInput';
+import { SearchInput } from '../../shared/SearchInput';
 
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';

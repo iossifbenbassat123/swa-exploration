@@ -1,5 +1,5 @@
 import type { InfrastructureNode } from "../infrastructureData";
-import type { FlattenedItem } from "./TreeItemTemplate";
+import type { FlattenedItem } from "../trees/primereact/TreeItemTemplate";
 
 // Utility functions for tree operations
 export const getTypeColor = (type: string) => {

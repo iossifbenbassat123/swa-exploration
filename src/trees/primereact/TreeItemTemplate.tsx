@@ -1,4 +1,4 @@
-import { getTypeColor, getStatusColor } from './TreeUtils';
+import { getTypeColor, getStatusColor } from '../../shared/TreeUtils';
 
 export interface FlattenedItem {
   id: string;
