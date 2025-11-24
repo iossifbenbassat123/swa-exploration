@@ -114,14 +114,29 @@ export const TreePanel = ({ title, selectedId, onSelectedIdChange }: TreePanelPr
       </div>
 
       {/* Tree container with virtualization */}
-      <div ref={containerRef} style={{ flex: 1, padding: '0.5rem', overflow: 'hidden' }}>
-        <VirtualScroller
-          items={flattenedData}
-          itemSize={ROW_HEIGHT}
-          itemTemplate={itemTemplate}
-          style={{ width: '100%', height: `${containerHeight - 16}px` }}
-          className="border-1 surface-border border-round"
-        />
+      <div ref={containerRef} style={{ flex: 1, padding: '0.5rem', overflow: 'hidden', position: 'relative' }}>
+        {flattenedData.length === 0 && searchTerm ? (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              color: '#6b7280',
+              fontSize: '0.875rem',
+            }}
+          >
+            No items found matching "{searchTerm}"
+          </div>
+        ) : (
+          <VirtualScroller
+            items={flattenedData}
+            itemSize={ROW_HEIGHT}
+            itemTemplate={itemTemplate}
+            style={{ width: '100%', height: `${containerHeight - 16}px` }}
+            className="border-1 surface-border border-round"
+          />
+        )}
       </div>
     </div>
   );

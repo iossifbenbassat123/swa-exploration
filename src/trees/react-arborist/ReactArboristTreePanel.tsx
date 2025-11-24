@@ -108,6 +108,23 @@ export const ReactArboristTreePanel = ({
     [workloadDisplayLimit]
   );
 
+  // Check if any nodes match the search term
+  const hasMatchingNodes = useMemo(() => {
+    if (!debouncedSearchTerm) return true;
+    
+    const checkNode = (node: TreeData): boolean => {
+      if (node.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) {
+        return true;
+      }
+      if (node.children) {
+        return node.children.some(checkNode);
+      }
+      return false;
+    };
+    
+    return treeData.some(checkNode);
+  }, [treeData, debouncedSearchTerm]);
+
   // Custom node renderer
   const Node = ({ node, style, dragHandle }: NodeRendererProps<TreeData>) => {
     const typeColors = getTypeColor(node.data.type);
@@ -332,21 +349,36 @@ export const ReactArboristTreePanel = ({
       </div>
 
       {/* Tree container */}
-      <div style={{ flex: 1, padding: "0.5rem", overflow: "hidden" }}>
-        <Tree
-          data={treeData}
-          openByDefault={true}
-          width="100%"
-          height={window.innerHeight - 120}
-          indent={24}
-          rowHeight={36}
-          searchTerm={debouncedSearchTerm}
-          searchMatch={(node, term) =>
-            node.data.name.toLowerCase().includes(term.toLowerCase())
-          }
-        >
-          {Node}
-        </Tree>
+      <div style={{ flex: 1, padding: "0.5rem", overflow: "hidden", position: "relative" }}>
+        {!hasMatchingNodes && debouncedSearchTerm ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              color: "#6b7280",
+              fontSize: "0.875rem",
+            }}
+          >
+            No items found matching "{debouncedSearchTerm}"
+          </div>
+        ) : (
+          <Tree
+            data={treeData}
+            openByDefault={true}
+            width="100%"
+            height={window.innerHeight - 120}
+            indent={24}
+            rowHeight={36}
+            searchTerm={debouncedSearchTerm}
+            searchMatch={(node, term) =>
+              node.data.name.toLowerCase().includes(term.toLowerCase())
+            }
+          >
+            {Node}
+          </Tree>
+        )}
       </div>
     </div>
   );
