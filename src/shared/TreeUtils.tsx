@@ -1,4 +1,5 @@
 import type { InfrastructureNode } from "../infrastructureData";
+import type { FlattenedItem } from "./TreeItemTemplate";
 
 // Utility functions for tree operations
 export const getTypeColor = (type: string) => {
@@ -68,4 +69,120 @@ export const findTopLevelEnv = (
 
   return null;
 };
+
+// Flatten tree structure into a list
+export function flattenTree(
+  nodes: InfrastructureNode[],
+  expandedKeys: Record<string, boolean>,
+  workloadLimits: Record<string, number> = {},
+  level: number = 0,
+  searchTerm: string = ''
+): FlattenedItem[] {
+  const result: FlattenedItem[] = [];
+  const term = searchTerm.toLowerCase();
+
+  for (const node of nodes) {
+    const isExpanded = expandedKeys[node.id] ?? true;
+    const matchesSearch = !searchTerm || node.label.toLowerCase().includes(term);
+
+    // Add current node if it matches search or has matching children
+    if (matchesSearch || !searchTerm) {
+      let hasChildren = false;
+      let childrenToProcess: InfrastructureNode[] = [];
+
+      if (node.children) {
+        // If this is a serverPool with many workloads, limit them
+        if (node.type === 'serverPool' && node.children.length > 10) {
+          const limit = workloadLimits[node.id] || 10;
+          const displayedChildren = node.children.slice(0, limit);
+
+          childrenToProcess = displayedChildren;
+          hasChildren = true;
+        } else {
+          childrenToProcess = node.children;
+          hasChildren = node.children.length > 0;
+        }
+      }
+
+      result.push({
+        id: node.id,
+        label: node.label,
+        type: node.type,
+        status: node.status,
+        level,
+        hasChildren,
+        isExpanded,
+      });
+
+      // Add children if expanded
+      if (isExpanded && childrenToProcess.length > 0) {
+        const children = flattenTree(
+          childrenToProcess,
+          expandedKeys,
+          workloadLimits,
+          level + 1,
+          searchTerm
+        );
+        result.push(...children);
+
+        // Add "Load More" and "Load All" buttons AFTER children if this is a serverPool with more items
+        if (node.type === 'serverPool' && node.children && node.children.length > 10) {
+          const limit = workloadLimits[node.id] || 10;
+          const hasMore = limit < node.children.length;
+          if (hasMore) {
+            result.push({
+              id: `${node.id}-load-more`,
+              label: `Load More (${node.children.length - limit} remaining)`,
+              type: 'workload',
+              level: level + 1,
+              hasChildren: false,
+              isExpanded: false,
+              isLoadMore: true,
+              poolId: node.id,
+              totalCount: node.children.length,
+            });
+            result.push({
+              id: `${node.id}-load-all`,
+              label: `Load All (${node.children.length} total)`,
+              type: 'workload',
+              level: level + 1,
+              hasChildren: false,
+              isExpanded: false,
+              isLoadMore: true,
+              isLoadAll: true,
+              poolId: node.id,
+              totalCount: node.children.length,
+            });
+          }
+        }
+      }
+    } else if (searchTerm) {
+      // If node doesn't match but might have matching children, still process children
+      if (node.children) {
+        const children = flattenTree(
+          node.children,
+          expandedKeys,
+          workloadLimits,
+          level + 1,
+          searchTerm
+        );
+        if (children.length > 0) {
+          // Add parent node if children match
+          result.push({
+            id: node.id,
+            label: node.label,
+            type: node.type,
+            status: node.status,
+            level,
+            hasChildren: true,
+            isExpanded: expandedKeys[node.id] ?? true,
+          });
+          result.push(...children);
+        }
+      }
+    }
+  }
+
+  return result;
+}
 
